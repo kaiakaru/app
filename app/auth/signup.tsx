@@ -1,20 +1,20 @@
-// app/auth/login.tsx
-import { useNavigation } from '@react-navigation/native';
+// app/auth/signup.tsx
 import React, { useState } from 'react';
 import { Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-interface LoginScreenProps {
-  onLogin: () => void;
+interface SignUpScreenProps {
+  onSignUp: () => void;
+  goToLogin: () => void;
 }
 
-export default function LoginScreen({ onLogin }: LoginScreenProps) {
+export default function SignUpScreen({ onSignUp, goToLogin }: SignUpScreenProps) {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const navigation = useNavigation();
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Welcome Back</Text>
+      <Text style={styles.title}>Create Account</Text>
 
       <TextInput
         style={styles.input}
@@ -25,24 +25,28 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
 
       <TextInput
         style={styles.input}
+        placeholder="Email"
+        keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
+      />
+
+      <TextInput
+        style={styles.input}
         placeholder="Password"
         secureTextEntry
         value={password}
         onChangeText={setPassword}
       />
 
-      <Pressable style={styles.button} onPress={onLogin}>
-        <Text style={styles.buttonText}>Log In</Text>
+      <Pressable style={styles.button} onPress={onSignUp}>
+        <Text style={styles.buttonText}>Sign Up</Text>
       </Pressable>
 
-      {/* Sign Up Section */}
-      <View style={styles.signUpContainer}>
-        <Text style={styles.signUpText}>Don't have an account?</Text>
-        <Pressable 
-          onPress={() => navigation.navigate('signup')} // navigate to Signup screen
-          style={styles.signUpButton}
-        >
-          <Text style={styles.signUpButtonText}>Sign Up</Text>
+      <View style={styles.loginContainer}>
+        <Text style={styles.loginText}>Already have an account?</Text>
+        <Pressable onPress={goToLogin}>
+          <Text style={styles.loginButtonText}>Log In</Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -81,23 +85,20 @@ const styles = StyleSheet.create({
     fontSize: 18, 
     fontWeight: '600' 
   },
-    signUpContainer: {
+  loginContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 10,
   },
-  signUpText: {
+  loginText: {
     color: '#fff',
     fontSize: 16,
     marginRight: 8,
   },
-  signUpButton: {
-    // optional styling for the sign up pressable
-  },
-  signUpButtonText: {
+  loginButtonText: {
     color: '#fff',
     fontWeight: '700',
     fontSize: 16,
-    textDecorationLine: 'underline', // makes it look like a link
+    textDecorationLine: 'underline',
   },
 });

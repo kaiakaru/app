@@ -1,4 +1,4 @@
-// app/home.tsx
+// app/pages/home.tsx
 import React, { useState } from 'react';
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 

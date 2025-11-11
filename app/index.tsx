@@ -1,17 +1,30 @@
 // app/index.tsx
 import React, { useState } from 'react';
+import LoginScreen from './auth/login';
+import SignUpScreen from './auth/signup';
 import HomeScreen from './pages/home';
-import LoginScreen from './pages/login';
 
 export default function Index() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [screen, setScreen] = useState<'login' | 'signup' | 'home'>('login');
 
-  // Simulate a simple login state
-  if (!isLoggedIn) {
-    return <LoginScreen onLogin={() => setIsLoggedIn(true)} />;
+  if (screen === 'login') {
+    return (
+      <LoginScreen
+        onLogin={() => setScreen('home')}
+        goToSignUp={() => setScreen('signup')}
+      />
+    );
+  }
+
+  if (screen === 'signup') {
+    return (
+      <SignUpScreen
+        onSignUp={() => setScreen('home')}
+        goToLogin={() => setScreen('login')}
+      />
+    );
   }
 
   return <HomeScreen />;
 }
-
 
