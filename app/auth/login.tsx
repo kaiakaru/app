@@ -1,15 +1,17 @@
 // app/auth/login.tsx
+import { Link, router } from "expo-router";
 import React, { useState } from 'react';
 import { Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-interface LoginScreenProps {
-  onLogin: () => void;
-  goToSignUp: () => void;
-}
 
-export default function LoginScreen({ onLogin, goToSignUp }: LoginScreenProps) {
+export default function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
+  const handleLogin = () => {
+    // TODO: add auth logic later
+    router.replace("/tabs/home"); // navigates to main app
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -30,15 +32,15 @@ export default function LoginScreen({ onLogin, goToSignUp }: LoginScreenProps) {
         onChangeText={setPassword}
       />
 
-      <Pressable style={styles.button} onPress={onLogin}>
+      <Pressable style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Log In</Text>
       </Pressable>
 
       <View style={styles.signUpContainer}>
         <Text style={styles.signUpText}>Don’t have an account?</Text>
-        <Pressable onPress={goToSignUp}>
-          <Text style={styles.signUpButtonText}>Sign Up</Text>
-        </Pressable>
+        <Link href="/auth/signup" style={styles.signUpButtonText}>
+          Sign Up
+        </Link>
       </View>
     </SafeAreaView>
   );
