@@ -1,30 +1,14 @@
 // app/index.tsx
-import React, { useState } from 'react';
-import LoginScreen from './auth/login';
-import SignUpScreen from './auth/signup';
-import HomeScreen from './pages/home';
+import { Redirect } from "expo-router";
 
 export default function Index() {
-  const [screen, setScreen] = useState<'login' | 'signup' | 'home'>('login');
+  const isLoggedIn = false; // later check AsyncStorage or Firebase auth here
 
-  if (screen === 'login') {
-    return (
-      <LoginScreen
-        onLogin={() => setScreen('home')}
-        goToSignUp={() => setScreen('signup')}
-      />
-    );
+  if (isLoggedIn) {
+    return <Redirect href="/tabs/home" />;
+  } else {
+    
+    return <Redirect href="/auth/login" />;
   }
-
-  if (screen === 'signup') {
-    return (
-      <SignUpScreen
-        onSignUp={() => setScreen('home')}
-        goToLogin={() => setScreen('login')}
-      />
-    );
-  }
-
-  return <HomeScreen />;
 }
 
