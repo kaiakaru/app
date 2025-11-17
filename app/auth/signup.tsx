@@ -1,10 +1,15 @@
 // app/auth/signup.tsx
 import { Link, router } from "expo-router";
 import React, { useState } from 'react';
-import { Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Keyboard,
+  Pressable, SafeAreaView, StyleSheet, Text,
+  TextInput,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 
 export default function SignUpScreen() {
-  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -15,57 +20,67 @@ export default function SignUpScreen() {
 
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.appName}>Balance+</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
-      />
+        <View style={styles.centerBox}>
+          <Text style={styles.title}>Create Account</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor="#A9A9A9"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+          />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#A9A9A9"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+          <Pressable style={styles.button} onPress={handleSignUp}>
+            <Text style={styles.buttonText}>Sign Up</Text>
+          </Pressable>
 
-      <Pressable style={styles.button} onPress={handleSignUp}>
-        <Text style={styles.buttonText}>Sign Up</Text>
-      </Pressable>
-
-      <View style={styles.loginContainer}>
-        <Text style={styles.loginText}>Already have an account?</Text>
-        <Link href="/auth/login" style={styles.loginButtonText}>
-          Log In
-        </Link>
-      </View>
-    </SafeAreaView>
+          <View style={styles.loginContainer}>
+            <Text style={styles.loginText}>Already have an account?</Text>
+            <Link href="/auth/login" style={styles.loginButtonText}>
+              Log In
+            </Link>
+          </View>
+        </View>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
   container: { 
     backgroundColor: '#acc7e3ff',
-    flex: 1, 
-    justifyContent: 'center', 
+    flex: 1,  
     alignItems: 'center', 
     padding: 20 
   },
+  appName: {
+    fontSize: 30,
+    fontWeight: '700',
+    color: '#2973bcff',
+  },
+  centerBox: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%", 
+  },
   title: { 
     color: '#fff',
-    fontSize: 28, 
+    fontSize: 26, 
     fontWeight: '700', 
     marginBottom: 30 
   },

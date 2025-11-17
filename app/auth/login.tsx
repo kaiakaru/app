@@ -1,7 +1,13 @@
 // app/auth/login.tsx
 import { Link, router } from "expo-router";
 import React, { useState } from 'react';
-import { Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Keyboard,
+  Pressable, SafeAreaView, StyleSheet, Text,
+  TextInput,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 
 
 export default function LoginScreen() {
@@ -14,35 +20,44 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Welcome Back</Text>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <SafeAreaView style={styles.container}>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
-      />
+        <Text style={styles.appName}>Balance+</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+        <View style={styles.centerBox}>
+          <Text style={styles.title}>Welcome</Text>
 
-      <Pressable style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Log In</Text>
-      </Pressable>
+          <TextInput
+            style={styles.input}
+            placeholder="Username"
+            placeholderTextColor="#A9A9A9"
+            value={username}
+            onChangeText={setUsername}
+          />
 
-      <View style={styles.signUpContainer}>
-        <Text style={styles.signUpText}>Don’t have an account?</Text>
-        <Link href="/auth/signup" style={styles.signUpButtonText}>
-          Sign Up
-        </Link>
-      </View>
-    </SafeAreaView>
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#A9A9A9"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+
+          <Pressable style={styles.button} onPress={handleLogin}>
+            <Text style={styles.buttonText}>Log In</Text>
+          </Pressable>
+
+          <View style={styles.signUpContainer}>
+            <Text style={styles.signUpText}>Don’t have an account?</Text>
+            <Link href="/auth/signup" style={styles.signUpButtonText}>
+              Sign Up
+            </Link>
+          </View>
+        </View>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -51,13 +66,23 @@ const styles = StyleSheet.create({
   container: { 
     backgroundColor: '#acc7e3ff',
     flex: 1, 
-    justifyContent: 'center', 
     alignItems: 'center', 
     padding: 20 
   },
+  appName: {
+    fontSize: 30,
+    fontWeight: '700',
+    color: '#2973bcff',
+  },
+  centerBox: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+  },
   title: { 
     color: '#fff',
-    fontSize: 28, 
+    fontSize: 26, 
     fontWeight: '700', 
     marginBottom: 30 
   },

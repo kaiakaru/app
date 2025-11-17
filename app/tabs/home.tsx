@@ -1,34 +1,84 @@
 // app/tabs/home.tsx
+import { Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React, { useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View
+} from 'react-native';
 
-const categories = [
-  { label: 'Mood', color: '#96B9E7' },
-  { label: 'Sleep', color: '#96B9E7' },
-  { label: 'Energy', color: '#96B9E7' },
-  { label: 'Activity', color: '#96B9E7' },
-  { label: 'Nutrition', color: '#96B9E7' },
-  { label: 'Symptoms', color: '#96B9E7' },
-  { label: 'Notes', color: '#96B9E7' },
+
+const categories: { label: string }[] = [
+  { label: "Mood" },
+  { label: "Sleep"  },
+  { label: "Energy"  },
+  { label: "Activity" },
+  { label: "Nutrition" },
+  { label: "Symptoms" },
+  { label: "Notes" },
 ];
 
+const moodColors: { [key: number]: string } = {
+  1: "#d9534f",
+  2: "#f0ad4e",
+  3: "#ffd27f",
+  4: "#f7e06e",
+  5: "#5cb85c"
+};
+
 export default function HomeScreen() {
-  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const daysOfWeek = [
+    'Sunday', 
+    'Monday', 
+    'Tuesday', 
+    'Wednesday', 
+    'Thursday', 
+    'Friday', 
+    'Saturday'
+  ];
+
   const today = daysOfWeek[new Date().getDay()];
-  const [selectedDay, setSelectedDay] = useState(today);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [moodRating, setMoodRating] = useState<number | null>(null);
+
+  const toggleCategory = (label: string) => {
+    setOpenCategory((prev) => (prev === label ? null : label));
+  };
+
+  const submitMood = (value: number) => {
+    setMoodRating(value);
+    setOpenCategory(null);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
+
+      <Text style={styles.appName}>Balance+</Text>
+      {/* main scrollable content */}
       <ScrollView contentContainerStyle={styles.scroll}>
+
         {/* Header */}
-        <Text style={styles.appName}>Balance+</Text>
-        <Text style={styles.date}>
+        
+
+        <View style={styles.dateRow}>
+          <Pressable onPress={() => router.push("/tabs/history")}>
+            <Feather name="calendar" size={24} color="#2973bcff" />
+          </Pressable>
+
+          <Text style={styles.dateText}>
             {new Date().toLocaleDateString('en-US', {
               day: 'numeric',
               month: 'short',
               year: 'numeric',
             })}
-        </Text>
+          </Text>
+        </View>
 
         {/* Day Selector */}
         <ScrollView
@@ -36,7 +86,7 @@ export default function HomeScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.dayRow}
         >
-          {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day) => (
+          {daysOfWeek.map((day) => (
             <Pressable
               key={day}
               style={[
@@ -57,24 +107,77 @@ export default function HomeScreen() {
           ))}
         </ScrollView>
 
-        {/* Categories */}
+        {/* DAILY LOG */}
+        <Text style={styles.screenName}>Daily Log</Text>
+        
         <View style={styles.stack}>
           {categories.map((item) => (
-            <Pressable
-              key={item.label}
-              style={[styles.strip, { backgroundColor: item.color }]}
-              onPress={() => console.log(`${item.label} pressed`)}
-            >
-              <Text style={styles.stripText}>{item.label}</Text>
-            </Pressable>
-          ))}
-        </View>
+            <View key={item.label}>
+              <Pressable
+                style={styles.strip}
+                onPress={() => toggleCategory(item.label)}
+              >
+                <Text style={styles.stripText}>{item.label}</Text>
 
-        {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Daily Log</Text>
+                <Feather
+                  name={openCategory === item.label ? "minus" : "plus"}
+                  size={22}
+                  color="#fff"
+                />
+              </Pressable>
+
+              {/* Dropdown for mood only */}
+              {item.label === "Mood" && openCategory === "Mood" && (
+                <View style={styles.dropdown}>
+                  <Text style={styles.dropdownText}>How is your mood?</Text>
+
+                  <View style={styles.moodRow}>
+                    {[1, 2, 3, 4, 5].map((value) => (
+                      <Pressable
+                        key={value}
+                        onPress={() => submitMood(value)}
+                        style={[
+                          styles.moodButton,
+                          { backgroundColor: moodColors[value]}
+                        ]}                      
+                      >
+                        <Text style={styles.moodLabel}>{value}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              )}
+
+              {/* Dropdown for sleep*/}
+            </View>
+          ))}
+
+          {/* Mood Results */}
+          {moodRating && (
+            <View style={styles.resultBox}>
+              <Text style={styles.resultText}>
+                Mood logged: {moodRating} / 5
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
+
+
+      {/* FOOTER NAV */}
+      <View style={styles.footer}>
+        <Pressable onPress={() => router.push("/tabs/home")}>
+          <Feather name="home" size={28} color="#fff" />
+        </Pressable>
+
+        <Pressable onPress={() => router.push("/tabs/stats")}>
+          <Feather name="bar-chart-2" size={28} color="#fff" />
+        </Pressable>
+
+        <Pressable onPress={() => router.push("/tabs/history")}>
+          <Feather name="calendar" size={28} color="#fff" />
+        </Pressable>
+      </View>
     </SafeAreaView>
   );
 }
@@ -85,18 +188,32 @@ const styles = StyleSheet.create({
     backgroundColor: '#96B9E7',
   },
   scroll: {
-    alignItems: 'center',
-    paddingVertical: 20,
+    paddingBottom: 20,
   },
   appName: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '700',
-    color: '#5b7fa3',
+    color: '#2973bcff',
+    marginLeft: 20,
+    marginBottom: 10,
   },
-  date: {
-    fontSize: 16,
-    color: '#6a7d91',
+  screenName: {
+    fontSize: 26,
+    paddingLeft: 20,
+    fontWeight: 800,
+    color: '#f4f6f9ff'
+  },
+    dateRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    marginLeft: 20,
     marginBottom: 20,
+    gap: 10,
+  },
+  dateText: {
+    fontSize: 16,
+    color: '#2973bcff',
   },
   dayRow: {
     flexDirection: 'row',
@@ -126,22 +243,65 @@ const styles = StyleSheet.create({
   },
   strip: {
     width: '100%',
-    paddingVertical: 20,
+    paddingVertical: 30,
     paddingHorizontal: 20, 
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc'
+    borderBottomColor: '#6ca0dc',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   stripText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#dae7f3ff',
+    color: '#f4f6f9ff',
+  },
+  dropdown: {
+    padding: 15,
+    backgroundColor: "#96B9E7",
+  },
+  dropdownText: {
+    fontSize: 16,
+    marginBottom: 12,
+    color: "#fff",
+  },
+
+  moodRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  moodButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  moodLabel: {
+    color: "#000",
+    fontWeight: "700",
+  },
+  resultBox: {
+    backgroundColor: "#ffffff44",
+    padding: 15,
+    alignSelf: "center",
+    borderRadius: 12,
+    marginTop: 10,
+  },
+  resultText: {
+    color: "#fff",
+    fontWeight: "600",
   },
   footer: {
-    marginTop: 30,
-  },
-  footerText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#5b7fa3',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#96B9E7',
+    flexDirection: "row",
+    justifyContent: "space-around",
+    paddingVertical: 18,
+    borderTopWidth: 2,
+    borderTopColor: "#6ca0dc",
   },
 });
