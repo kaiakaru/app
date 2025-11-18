@@ -8,6 +8,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View
 } from 'react-native';
 
@@ -27,7 +28,7 @@ const moodColors: { [key: number]: string } = {
   2: "#f0ad4e",
   3: "#ffd27f",
   4: "#f7e06e",
-  5: "#5cb85c"
+  5: "#65da7fff"
 };
 
 const sleepColors: { [key: number]: string } = {
@@ -66,6 +67,17 @@ export default function HomeScreen() {
   const [moodRating, setMoodRating] = useState<number | null>(null);
   const [sleepRating, setSleepRating] = useState<number | null>(null);
   const [energyRating, setEnergyRating] = useState<number | null>(null);
+  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
+  const [notes, setNotes] = useState("");
+
+  const symptomOptions = [
+    "Fatigue", 
+    "Headache", 
+    "Nausea", 
+    "Back Pain", 
+    "Anxiety", 
+    "Depression",
+  ]
 
   const toggleCategory = (label: string) => {
     setOpenCategories((prev) => 
@@ -74,6 +86,14 @@ export default function HomeScreen() {
       : [...prev, label]
     );
   };
+
+  const toggleSymptom = (symptom: string) => {
+    setSelectedSymptoms((prev) =>
+      prev.includes(symptom)
+        ? prev.filter((s) => s !== symptom)
+        : [...prev, symptom]
+    );
+  }
 
 
   return (
@@ -210,6 +230,42 @@ export default function HomeScreen() {
                   </View>
                 </View>
               )}
+              {/* symptoms dropdown */}
+              {item.label === "Symptoms" && openCategories.includes("Symptoms") && (
+                <View style={styles.dropdown}>
+                  <Text style={styles.dropdownText}>Select symptoms:</Text>
+
+                  <View style={styles.symptomGrid}>
+                    {symptomOptions.map((symptom) => (
+                      <Pressable
+                        key={symptom}
+                        onPress={() => toggleSymptom(symptom)}
+                        style={[
+                          styles.symptomButton,
+                          selectedSymptoms.includes(symptom) && styles.symptomSelected,
+                        ]}
+                      >
+                        <Text style={styles.symptomLabel}>{symptom}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              )}
+              {/* NOTES DROPDOWN */}
+              {item.label === "Notes" && openCategories.includes("Notes") && (
+                <View style={styles.dropdown}>
+                  <Text style={styles.dropdownText}>Write a note:</Text>
+
+                  <TextInput
+                    style={styles.notesInput}
+                    multiline
+                    value={notes}
+                    onChangeText={setNotes}
+                    placeholder="Write your thoughts..."
+                    placeholderTextColor="#545353ff"
+                  />
+                </View>
+              )}
             </View>
           ))}
         </View>
@@ -319,7 +375,7 @@ const styles = StyleSheet.create({
     color: "#2973bcff",
     fontWeight: 'bold',
   },
-
+/* mood */
   moodRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -335,6 +391,8 @@ const styles = StyleSheet.create({
     color: "#000000ff",
     fontWeight: "700",
   },
+
+  /* sleep & energy */
   sleepRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -347,20 +405,38 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   sleepLabel: {
-    color: "#000",
+    color: "#000000ff",
     fontWeight: "700",
   },
-  resultBox: {
-    backgroundColor: "#ffffff44",
-    padding: 15,
-    alignSelf: "center",
-    borderRadius: 12,
-    marginTop: 10,
+
+  /* Symptoms */ 
+  symptomGrid: { 
+    flexDirection: "row", 
+    flexWrap: "wrap", gap: 10, 
+  }, 
+  symptomButton: { 
+    paddingVertical: 8, 
+    paddingHorizontal: 14, 
+    backgroundColor: "#ffffff55", 
+    borderRadius: 10, 
+  }, 
+  symptomSelected: { 
+    backgroundColor: "#ffffffaa" 
+  }, 
+  symptomLabel: { 
+    color: "#fff", 
+    fontWeight: "600" 
+  }, 
+  
+  /* Notes */ 
+  notesInput: { 
+    backgroundColor: "#ffffff22", 
+    color: "#fff", 
+    padding: 12, 
+    borderRadius: 12, 
+    minHeight: 80, 
   },
-  resultText: {
-    color: "#fff",
-    fontWeight: "600",
-  },
+
   footer: {
     position: 'absolute',
     bottom: 0,
