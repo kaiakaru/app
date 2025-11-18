@@ -30,6 +30,14 @@ const moodColors: { [key: number]: string } = {
   5: "#5cb85c"
 };
 
+const sleepColors: { [key: number]: string } = {
+  1: "#db6060ff",
+  2: "#de5386ff",
+  3: "#b556a5ff",
+  4: "#8252b5ff",
+  5: "#736bd1ff"
+}
+
 export default function HomeScreen() {
   const daysOfWeek = [
     'Sunday', 
@@ -42,19 +50,22 @@ export default function HomeScreen() {
   ];
 
   const today = daysOfWeek[new Date().getDay()];
-  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [selectedDay, setSelectedDay] = useState<string>(today);
 
-  const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [openCategories, setOpenCategories] = useState<string[]>([]);
+
+  // collected data for logs
   const [moodRating, setMoodRating] = useState<number | null>(null);
+  const [sleepRating, setSleepRating] = useState<number | null>(null);
 
   const toggleCategory = (label: string) => {
-    setOpenCategory((prev) => (prev === label ? null : label));
+    setOpenCategories((prev) => 
+      prev.includes(label)
+      ? prev.filter((c) => c !== label)
+      : [...prev, label]
+    );
   };
 
-  const submitMood = (value: number) => {
-    setMoodRating(value);
-    setOpenCategory(null);
-  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -120,14 +131,14 @@ export default function HomeScreen() {
                 <Text style={styles.stripText}>{item.label}</Text>
 
                 <Feather
-                  name={openCategory === item.label ? "minus" : "plus"}
+                  name={openCategories.includes(item.label) ? "minus" : "plus"}
                   size={22}
                   color="#fff"
                 />
               </Pressable>
 
               {/* Dropdown for mood only */}
-              {item.label === "Mood" && openCategory === "Mood" && (
+              {item.label === "Mood" && openCategories.includes("Mood") && (
                 <View style={styles.dropdown}>
                   <Text style={styles.dropdownText}>How is your mood?</Text>
 
@@ -135,11 +146,10 @@ export default function HomeScreen() {
                     {[1, 2, 3, 4, 5].map((value) => (
                       <Pressable
                         key={value}
-                        onPress={() => submitMood(value)}
-                        style={[
-                          styles.moodButton,
-                          { backgroundColor: moodColors[value]}
-                        ]}                      
+                        onPress={() => {
+                          setMoodRating(value);
+                        }}
+                        style={[styles.moodButton, { backgroundColor: moodColors[value] }]}                      
                       >
                         <Text style={styles.moodLabel}>{value}</Text>
                       </Pressable>
@@ -147,19 +157,30 @@ export default function HomeScreen() {
                   </View>
                 </View>
               )}
+              {/* Dropdown for sleep only */}
+              {item.label === "Sleep" && openCategories.includes("Sleep") && (
+                <View style={styles.dropdown}>
+                  <Text style={styles.dropdownText}>How did you sleep?</Text>
 
-              {/* Dropdown for sleep*/}
+                  <View style={styles.sleepRow}>
+                    {[1, 2, 3, 4, 5].map((rating) => (
+                      <Pressable
+                        key={rating}
+                        style={[styles.sleepButton,
+                          { backgroundColor: sleepColors[rating]}
+                        ]} 
+                        onPress={() => {
+                          setSleepRating(rating);
+                        }}
+                      >
+                        <Text style={styles.sleepLabel}>{rating}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              )}
             </View>
           ))}
-
-          {/* Mood Results */}
-          {moodRating && (
-            <View style={styles.resultBox}>
-              <Text style={styles.resultText}>
-                Mood logged: {moodRating} / 5
-              </Text>
-            </View>
-          )}
         </View>
       </ScrollView>
 
@@ -263,7 +284,8 @@ const styles = StyleSheet.create({
   dropdownText: {
     fontSize: 16,
     marginBottom: 12,
-    color: "#fff",
+    color: "#2973bcff",
+    fontWeight: 'bold',
   },
 
   moodRow: {
@@ -273,11 +295,26 @@ const styles = StyleSheet.create({
   moodButton: {
     width: 50,
     height: 50,
-    borderRadius: 12,
+    borderRadius: 25,
     justifyContent: "center",
     alignItems: "center",
   },
   moodLabel: {
+    color: "#000000ff",
+    fontWeight: "700",
+  },
+  sleepRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  sleepButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  sleepLabel: {
     color: "#000",
     fontWeight: "700",
   },
