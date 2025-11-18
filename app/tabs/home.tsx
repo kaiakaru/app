@@ -31,11 +31,19 @@ const moodColors: { [key: number]: string } = {
 };
 
 const sleepColors: { [key: number]: string } = {
-  1: "#db6060ff",
+  1: "#e67175ff",
   2: "#de5386ff",
   3: "#b556a5ff",
   4: "#8252b5ff",
   5: "#736bd1ff"
+}
+
+const energyColors: { [key: number]: string } = {
+  1: "#50addbff",
+  2: "#53dec9ff",
+  3: "#64d9b4ff",
+  4: "#65da7fff",
+  5: "#bee57bff"
 }
 
 export default function HomeScreen() {
@@ -57,6 +65,7 @@ export default function HomeScreen() {
   // collected data for logs
   const [moodRating, setMoodRating] = useState<number | null>(null);
   const [sleepRating, setSleepRating] = useState<number | null>(null);
+  const [energyRating, setEnergyRating] = useState<number | null>(null);
 
   const toggleCategory = (label: string) => {
     setOpenCategories((prev) => 
@@ -137,7 +146,7 @@ export default function HomeScreen() {
                 />
               </Pressable>
 
-              {/* Dropdown for mood only */}
+              {/* Dropdown for mood */}
               {item.label === "Mood" && openCategories.includes("Mood") && (
                 <View style={styles.dropdown}>
                   <Text style={styles.dropdownText}>How is your mood?</Text>
@@ -157,7 +166,7 @@ export default function HomeScreen() {
                   </View>
                 </View>
               )}
-              {/* Dropdown for sleep only */}
+              {/* Dropdown for sleep */}
               {item.label === "Sleep" && openCategories.includes("Sleep") && (
                 <View style={styles.dropdown}>
                   <Text style={styles.dropdownText}>How did you sleep?</Text>
@@ -171,6 +180,28 @@ export default function HomeScreen() {
                         ]} 
                         onPress={() => {
                           setSleepRating(rating);
+                        }}
+                      >
+                        <Text style={styles.sleepLabel}>{rating}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              )}
+              {/* Dropdown for energy */}
+              {item.label === "Energy" && openCategories.includes("Energy") && (
+                <View style={styles.dropdown}>
+                  <Text style={styles.dropdownText}>What is your energy level?</Text>
+
+                  <View style={styles.sleepRow}>
+                    {[1, 2, 3, 4, 5].map((rating) => (
+                      <Pressable
+                        key={rating}
+                        style={[styles.sleepButton,
+                          { backgroundColor: energyColors[rating]}
+                        ]} 
+                        onPress={() => {
+                          setEnergyRating(rating);
                         }}
                       >
                         <Text style={styles.sleepLabel}>{rating}</Text>
@@ -215,6 +246,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '700',
     color: '#2973bcff',
+    marginTop: 10,
     marginLeft: 20,
     marginBottom: 10,
   },
