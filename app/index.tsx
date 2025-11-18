@@ -8,7 +8,7 @@ export default function Index() {
     return <Redirect href="/tabs/home" />;
   } else {
     
-    return <Redirect href="/auth/login" />;
+    return <Redirect href="/auth/welcome" />;
   }
 }
 

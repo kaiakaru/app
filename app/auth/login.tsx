@@ -26,7 +26,7 @@ export default function LoginScreen() {
         <Text style={styles.appName}>Balance+</Text>
 
         <View style={styles.centerBox}>
-          <Text style={styles.title}>Welcome</Text>
+          <Text style={styles.title}>Welcome Back</Text>
 
           <TextInput
             style={styles.input}
@@ -70,6 +70,7 @@ const styles = StyleSheet.create({
     padding: 20 
   },
   appName: {
+    marginTop: 50,
     fontSize: 30,
     fontWeight: '700',
     color: '#2973bcff',
@@ -79,6 +80,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     width: "100%",
+    marginBottom: 50,
   },
   title: { 
     color: '#fff',
