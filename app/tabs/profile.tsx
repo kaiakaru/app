@@ -11,7 +11,7 @@ export default function Profile() {
 				<Text style={styles.fieldLabel}>Username</Text>
 				<Text style={styles.fieldValue}>Guest</Text>
 
-				<Pressable style={styles.button} onPress={() => router.push('/tabs/settings')}>
+				<Pressable style={styles.button} onPress={() => router.push("/tabs/settings")}>
 					<Text style={styles.buttonText}>Open Settings</Text>
 				</Pressable>
 			</View>

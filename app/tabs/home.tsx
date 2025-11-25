@@ -335,14 +335,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#96B9E7',
   },
   scroll: {
-    paddingBottom: 20,
+    paddingBottom: 25,
   },
   appName: {
     fontSize: 28,
     fontWeight: '700',
     color: '#2973bcff',
     marginTop: 10,
-    marginLeft: 20,
     marginBottom: 10,
   },
   headerRow: {
