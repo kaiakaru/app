@@ -70,14 +70,16 @@ export default function HomeScreen() {
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
 
-  const symptomOptions = [
+  const symptomOptions = [ 
     "Fatigue", 
     "Headache", 
     "Nausea", 
     "Back Pain", 
     "Anxiety", 
-    "Depression",
+    "Depression", 
   ]
+
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleCategory = (label: string) => {
     setOpenCategories((prev) => 
@@ -99,13 +101,53 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
 
-      <Text style={styles.appName}>Balance+</Text>
-      {/* main scrollable content */}
+      {/* HEADER */}
+      <View style={styles.headerRow}>
+        <Text style={styles.appName}>Balance+</Text>
+
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 15 }}>
+          <Pressable onPress={() => router.push("/tabs/profile")}>
+            <Feather name="user" size={28} color="#2973bcff" />
+          </Pressable>
+
+          <Pressable onPress={() => setMenuOpen(!menuOpen)}>
+            <Feather name="menu" size={30} color="#2973bcff" />
+          </Pressable>
+        </View>
+      </View>
+
+      {/* DROPDOWN MENU */}
+      {menuOpen && (
+        <Pressable
+          style={styles.menuOverlay}
+          onPress={() => setMenuOpen(false)}
+        >
+          <View style={styles.menuContainer}>
+            <Pressable onPress={() => { setMenuOpen(false); router.push("/tabs/profile"); }}>
+              <Text style={styles.menuItem}>Account</Text>
+            </Pressable>
+
+            <Pressable onPress={() => { setMenuOpen(false); router.push("/tabs/settings"); }}>
+              <Text style={styles.menuItem}>Settings</Text>
+            </Pressable>
+
+            <Pressable onPress={() => setMenuOpen(false)}>
+              <Text style={styles.menuItem}>Notifications</Text>
+            </Pressable>
+
+            <Pressable onPress={() => setMenuOpen(false)}>
+              <Text style={styles.menuItem}>FAQs</Text>
+            </Pressable>
+
+            <Pressable onPress={() => setMenuOpen(false)}>
+              <Text style={styles.menuItem}>Data</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      )}
+
+      {/* MAIN CONTENT */}
       <ScrollView contentContainerStyle={styles.scroll}>
-
-        {/* Header */}
-        
-
         <View style={styles.dateRow}>
           <Pressable onPress={() => router.push("/tabs/history")}>
             <Feather name="calendar" size={24} color="#2973bcff" />
@@ -120,7 +162,6 @@ export default function HomeScreen() {
           </Text>
         </View>
 
-        {/* Day Selector */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -147,7 +188,6 @@ export default function HomeScreen() {
           ))}
         </ScrollView>
 
-        {/* DAILY LOG */}
         <Text style={styles.screenName}>Daily Log</Text>
         
         <View style={styles.stack}>
@@ -271,8 +311,7 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
 
-
-      {/* FOOTER NAV */}
+      {/* FOOTER */}
       <View style={styles.footer}>
         <Pressable onPress={() => router.push("/tabs/home")}>
           <Feather name="home" size={28} color="#fff" />
@@ -306,13 +345,53 @@ const styles = StyleSheet.create({
     marginLeft: 20,
     marginBottom: 10,
   },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginLeft: 20,
+    marginRight: 20,
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  menuOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.05)", // subtle dim
+  zIndex: 10,
+},
+menuContainer: {
+  position: "absolute",
+  top: 60,
+  right: 10,
+  width: 200, // thinner
+  backgroundColor: "#fff",
+  borderRadius: 12,
+  paddingVertical: 10,
+  shadowColor: "#000",
+  shadowOpacity: 0.25,
+  shadowRadius: 8,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 10,
+  zIndex: 11,
+},
+  menuItem: {
+  fontSize: 16,
+  paddingVertical: 10,
+  paddingHorizontal: 12,
+  borderBottomWidth: 1,
+  borderBottomColor: "#eee",
+},
   screenName: {
     fontSize: 26,
     paddingLeft: 20,
     fontWeight: 800,
     color: '#f4f6f9ff'
   },
-    dateRow: {
+  dateRow: {
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "flex-start",
@@ -353,7 +432,7 @@ const styles = StyleSheet.create({
   strip: {
     width: '100%',
     paddingVertical: 30,
-    paddingHorizontal: 20, 
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#6ca0dc',
     flexDirection: 'row',
