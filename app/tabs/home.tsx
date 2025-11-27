@@ -1,8 +1,10 @@
 // app/tabs/home.tsx
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -48,6 +50,8 @@ const energyColors: { [key: number]: string } = {
 }
 
 export default function HomeScreen() {
+  const scrollRef = useRef<ScrollView>(null);
+
   const daysOfWeek = [
     'Sunday', 
     'Monday', 
@@ -62,6 +66,8 @@ export default function HomeScreen() {
   const [selectedDay, setSelectedDay] = useState<string>(today);
 
   const [openCategories, setOpenCategories] = useState<string[]>([]);
+
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // collected data for logs
   const [moodRating, setMoodRating] = useState<number | null>(null);
@@ -79,7 +85,6 @@ export default function HomeScreen() {
     "Depression", 
   ]
 
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleCategory = (label: string) => {
     setOpenCategories((prev) => 
@@ -97,10 +102,13 @@ export default function HomeScreen() {
     );
   }
 
+  const isHome = true;
+  const isStats = false;
+  const isHistory = false;
+
 
   return (
     <SafeAreaView style={styles.container}>
-
       {/* HEADER */}
       <View style={styles.headerRow}>
         <Text style={styles.appName}>Balance+</Text>
@@ -147,182 +155,205 @@ export default function HomeScreen() {
       )}
 
       {/* MAIN CONTENT */}
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={styles.dateRow}>
-          <Pressable onPress={() => router.push("/tabs/history")}>
-            <Feather name="calendar" size={24} color="#2973bcff" />
-          </Pressable>
 
-          <Text style={styles.dateText}>
-            {new Date().toLocaleDateString('en-US', {
-              day: 'numeric',
-              month: 'short',
-              year: 'numeric',
-            })}
-          </Text>
-        </View>
+      <KeyboardAvoidingView
+        style={{ flex : 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.dayRow}
+      >
+
+        <ScrollView 
+          ref={scrollRef}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scroll}
         >
-          {daysOfWeek.map((day) => (
-            <Pressable
-              key={day}
-              style={[
-                styles.dayButton,
-                selectedDay === day && styles.daySelected,
-              ]}
-              onPress={() => setSelectedDay(day)}
-            >
-              <Text
-                style={[
-                  styles.dayText,
-                  selectedDay === day && styles.dayTextSelected,
-                ]}
-              >
-                {day.slice(0, 3)}
-              </Text>
+
+          <View style={styles.dateRow}>
+            <Pressable onPress={() => router.push("/tabs/history")}>
+              <Feather name="calendar" size={24} color="#2973bcff" />
             </Pressable>
-          ))}
-        </ScrollView>
 
-        <Text style={styles.screenName}>Daily Log</Text>
-        
-        <View style={styles.stack}>
-          {categories.map((item) => (
-            <View key={item.label}>
+            <Text style={styles.dateText}>
+              {new Date().toLocaleDateString('en-US', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+              })}
+            </Text>
+          </View>
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.dayRow}
+          >
+            {daysOfWeek.map((day) => (
               <Pressable
-                style={styles.strip}
-                onPress={() => toggleCategory(item.label)}
+                key={day}
+                style={[
+                  styles.dayButton,
+                  selectedDay === day && styles.daySelected,
+                ]}
+                onPress={() => setSelectedDay(day)}
               >
-                <Text style={styles.stripText}>{item.label}</Text>
-
-                <Feather
-                  name={openCategories.includes(item.label) ? "minus" : "plus"}
-                  size={22}
-                  color="#fff"
-                />
+                <Text
+                  style={[
+                    styles.dayText,
+                    selectedDay === day && styles.dayTextSelected,
+                  ]}
+                >
+                  {day.slice(0, 3)}
+                </Text>
               </Pressable>
+            ))}
+          </ScrollView>
 
-              {/* Dropdown for mood */}
-              {item.label === "Mood" && openCategories.includes("Mood") && (
-                <View style={styles.dropdown}>
-                  <Text style={styles.dropdownText}>How is your mood?</Text>
+          <Text style={styles.screenName}>Daily Log</Text>
+        
+          <View style={styles.stack}>
+            {categories.map((item) => (
+              <View key={item.label}>
+                <Pressable
+                  style={styles.strip}
+                  onPress={() => toggleCategory(item.label)}
+                >
+                  <Text style={styles.stripText}>{item.label}</Text>
 
-                  <View style={styles.moodRow}>
-                    {[1, 2, 3, 4, 5].map((value) => (
-                      <Pressable
-                        key={value}
-                        onPress={() => {
-                          setMoodRating(value);
-                        }}
-                        style={[styles.moodButton, { backgroundColor: moodColors[value] }]}                      
-                      >
-                        <Text style={styles.moodLabel}>{value}</Text>
-                      </Pressable>
-                    ))}
-                  </View>
-                </View>
-              )}
-              {/* Dropdown for sleep */}
-              {item.label === "Sleep" && openCategories.includes("Sleep") && (
-                <View style={styles.dropdown}>
-                  <Text style={styles.dropdownText}>How did you sleep?</Text>
-
-                  <View style={styles.sleepRow}>
-                    {[1, 2, 3, 4, 5].map((rating) => (
-                      <Pressable
-                        key={rating}
-                        style={[styles.sleepButton,
-                          { backgroundColor: sleepColors[rating]}
-                        ]} 
-                        onPress={() => {
-                          setSleepRating(rating);
-                        }}
-                      >
-                        <Text style={styles.sleepLabel}>{rating}</Text>
-                      </Pressable>
-                    ))}
-                  </View>
-                </View>
-              )}
-              {/* Dropdown for energy */}
-              {item.label === "Energy" && openCategories.includes("Energy") && (
-                <View style={styles.dropdown}>
-                  <Text style={styles.dropdownText}>What is your energy level?</Text>
-
-                  <View style={styles.sleepRow}>
-                    {[1, 2, 3, 4, 5].map((rating) => (
-                      <Pressable
-                        key={rating}
-                        style={[styles.sleepButton,
-                          { backgroundColor: energyColors[rating]}
-                        ]} 
-                        onPress={() => {
-                          setEnergyRating(rating);
-                        }}
-                      >
-                        <Text style={styles.sleepLabel}>{rating}</Text>
-                      </Pressable>
-                    ))}
-                  </View>
-                </View>
-              )}
-              {/* symptoms dropdown */}
-              {item.label === "Symptoms" && openCategories.includes("Symptoms") && (
-                <View style={styles.dropdown}>
-                  <Text style={styles.dropdownText}>Select symptoms:</Text>
-
-                  <View style={styles.symptomGrid}>
-                    {symptomOptions.map((symptom) => (
-                      <Pressable
-                        key={symptom}
-                        onPress={() => toggleSymptom(symptom)}
-                        style={[
-                          styles.symptomButton,
-                          selectedSymptoms.includes(symptom) && styles.symptomSelected,
-                        ]}
-                      >
-                        <Text style={styles.symptomLabel}>{symptom}</Text>
-                      </Pressable>
-                    ))}
-                  </View>
-                </View>
-              )}
-              {/* NOTES DROPDOWN */}
-              {item.label === "Notes" && openCategories.includes("Notes") && (
-                <View style={styles.dropdown}>
-                  <Text style={styles.dropdownText}>Write a note:</Text>
-
-                  <TextInput
-                    style={styles.notesInput}
-                    multiline
-                    value={notes}
-                    onChangeText={setNotes}
-                    placeholder="Write your thoughts..."
-                    placeholderTextColor="#545353ff"
+                  <Feather
+                    name={openCategories.includes(item.label) ? "minus" : "plus"}
+                    size={22}
+                    color="#fff"
                   />
-                </View>
-              )}
-            </View>
-          ))}
-        </View>
-      </ScrollView>
+                </Pressable>
+
+                {/* Dropdown for mood */}
+                {item.label === "Mood" && openCategories.includes("Mood") && (
+                  <View style={styles.dropdown}>
+                    <Text style={styles.dropdownText}>How is your mood?</Text>
+
+                    <View style={styles.moodRow}>
+                      {[1, 2, 3, 4, 5].map((value) => (
+                        <Pressable
+                          key={value}
+                          onPress={() => {
+                          setMoodRating(value);
+                          }}
+                          style={[styles.moodButton, { backgroundColor: moodColors[value] }]}                      
+                        >
+                          <Text style={styles.moodLabel}>{value}</Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </View>
+                )}
+                {/* Dropdown for sleep */}
+                {item.label === "Sleep" && openCategories.includes("Sleep") && (
+                  <View style={styles.dropdown}>
+                    <Text style={styles.dropdownText}>How did you sleep?</Text>
+
+                    <View style={styles.sleepRow}>
+                      {[1, 2, 3, 4, 5].map((rating) => (
+                        <Pressable
+                          key={rating}
+                          style={[styles.sleepButton,
+                            { backgroundColor: sleepColors[rating]}
+                          ]} 
+                          onPress={() => {
+                            setSleepRating(rating);
+                          }}
+                        >
+                          <Text style={styles.sleepLabel}>{rating}</Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </View>
+                )}
+                {/* Dropdown for energy */}
+                {item.label === "Energy" && openCategories.includes("Energy") && (
+                  <View style={styles.dropdown}>
+                    <Text style={styles.dropdownText}>What is your energy level?</Text>
+
+                    <View style={styles.sleepRow}>
+                      {[1, 2, 3, 4, 5].map((rating) => (
+                        <Pressable
+                          key={rating}
+                          style={[styles.sleepButton,
+                            { backgroundColor: energyColors[rating]}
+                          ]} 
+                          onPress={() => {
+                            setEnergyRating(rating);
+                          }}
+                        >
+                          <Text style={styles.sleepLabel}>{rating}</Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </View>
+                )}
+                {/* symptoms dropdown */}
+                {item.label === "Symptoms" && openCategories.includes("Symptoms") && (
+                  <View style={styles.dropdown}>
+                    <Text style={styles.dropdownText}>Select symptoms:</Text>
+
+                    <View style={styles.symptomGrid}>
+                      {symptomOptions.map((symptom) => (
+                        <Pressable
+                          key={symptom}
+                          onPress={() => toggleSymptom(symptom)}
+                          style={[
+                            styles.symptomButton,
+                            selectedSymptoms.includes(symptom) && styles.symptomSelected,
+                          ]}
+                        >
+                          <Text style={styles.symptomLabel}>{symptom}</Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </View>
+                )}
+                {/* NOTES DROPDOWN */}
+                {item.label === "Notes" && openCategories.includes("Notes") && (
+                  <View style={styles.dropdown}>
+                    <Text style={styles.dropdownText}>Write a note:</Text>
+
+                    <TextInput
+                      style={styles.notesInput}
+                      multiline
+                      value={notes}
+                      onChangeText={setNotes}
+                      placeholder="Write your thoughts..."
+                      placeholderTextColor="#545353ff"
+                      onFocus={() => {
+                        //autoscroll
+                        setTimeout(() => {
+                          scrollRef.current?.scrollTo({
+                            y: 600,
+                            animated: true,
+                          });
+                        }, 200);
+                      }}
+                    />
+                  </View>
+                )}
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* FOOTER */}
       <View style={styles.footer}>
         <Pressable onPress={() => router.push("/tabs/home")}>
-          <Feather name="home" size={28} color="#fff" />
+          <Feather name="home" size={28} color={isHome ? "#fff" : "#2973bcff"} />
         </Pressable>
 
         <Pressable onPress={() => router.push("/tabs/stats")}>
-          <Feather name="bar-chart-2" size={28} color="#fff" />
+          <Feather name="bar-chart-2" size={28} color={isStats ? "#fff" : "#2973bcff"} />
         </Pressable>
 
         <Pressable onPress={() => router.push("/tabs/history")}>
-          <Feather name="calendar" size={28} color="#fff" />
+          <Feather name="calendar" size={28} color={isHistory? "#fff" : "#2973bcff"} />
         </Pressable>
       </View>
     </SafeAreaView>
@@ -335,7 +366,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#96B9E7',
   },
   scroll: {
-    paddingBottom: 25,
+    paddingBottom: 65,
   },
   appName: {
     fontSize: 28,
@@ -512,7 +543,7 @@ menuContainer: {
     color: "#fff", 
     padding: 12, 
     borderRadius: 12, 
-    minHeight: 80, 
+    minHeight: 180, 
   },
 
   footer: {

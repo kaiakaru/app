@@ -26,6 +26,10 @@ export default function HistoryScreen() {
     setCurrentDate(new Date(year, month + 1, 1));
   };
 
+  const isHome = false;
+  const isStats = false;
+  const isHistory = true;
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -95,15 +99,15 @@ export default function HistoryScreen() {
     {/* FOOTER */}
         <View style={styles.footer}>
             <Pressable onPress={() => router.push("/tabs/home")}>
-              <Feather name="home" size={28} color="#fff" />
+              <Feather name="home" size={28} color={isHome ? "#fff" : "#2973bcff" } />
             </Pressable>
       
             <Pressable onPress={() => router.push("/tabs/stats")}>
-              <Feather name="bar-chart-2" size={28} color="#fff" />
+              <Feather name="bar-chart-2" size={28} color={isStats? "#fff" : "#2973bcff" } />
             </Pressable>
       
             <Pressable onPress={() => router.push("/tabs/history")}>
-                <Feather name="calendar" size={28} color="#fff" />
+                <Feather name="calendar" size={28} color={isHistory? "#fff" : "#2973bcff" } />
             </Pressable>
         </View>
     </SafeAreaView>
