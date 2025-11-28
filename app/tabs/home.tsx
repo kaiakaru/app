@@ -557,5 +557,6 @@ menuContainer: {
     paddingVertical: 18,
     borderTopWidth: 2,
     borderTopColor: "#6ca0dc",
+    marginBottom: 10,
   },
 });

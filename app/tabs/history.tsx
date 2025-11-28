@@ -2,10 +2,14 @@
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function HistoryScreen() {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
+  const [showYearPicker, setShowYearPicker] = useState(false);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -17,6 +21,15 @@ export default function HistoryScreen() {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+  const monthNames = [
+    "January", "February", "March",
+    "April", "May", "June",
+    "July", "August", "September",
+    "October", "November", "December"
+  ];
+
+  const years = Array.from({ length: 20 }, (_, i) => year - 10 + i);
 
   const prevMonth = () => {
     setCurrentDate(new Date(year, month - 1, 1));
@@ -59,44 +72,136 @@ export default function HistoryScreen() {
         </Pressable>
       </View>
 
-      {/* Calendar grid */}
-      <View style={styles.weekRow}>
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-          <Text key={d} style={styles.weekLabel}>
-            {d}
-          </Text>
-        ))}
+      {/* Month and year dropdowns */}
+      <View style={styles.dropdownRow}>
+        
+        {/* MONTH DROPDOWN */}
+        <Pressable
+          style={styles.dropdownBox}
+          onPress={() => setShowMonthPicker(true)}
+        >
+          <Text style={styles.dropdownText}>{monthNames[month]}</Text>
+          <Feather name="chevron-down" size={20} color="#fff" />
+        </Pressable>
+
+        {/* YEAR DROPDOWN */}
+        <Pressable
+          style={styles.dropdownBox}
+          onPress={() => setShowYearPicker(true)}
+        >
+          <Text style={styles.dropdownText}>{year}</Text>
+          <Feather name="chevron-down" size={20} color="#fff" />
+        </Pressable>
       </View>
 
-      <View style={styles.calendarGrid}>
-        {/* Empty cells before first day */}
-        {Array.from({ length: firstDay }).map((_, idx) => (
-          <View key={`empty-${idx}`} style={styles.dayCell} />
-        ))}
+      {/* MONTH PICKER MODAL */}
+      <Modal transparent visible={showMonthPicker} animationType="fade">
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowMonthPicker(false)}
+        >
+          <View style={styles.modalBox}>
+            <ScrollView>
+              {monthNames.map((m, i) => (
+                <Pressable
+                  key={m}
+                  style={styles.modalItem}
+                  onPress={() => {
+                    setCurrentDate(new Date(year, i, 1));
+                    setShowMonthPicker(false);
+                  }}
+                >
+                  <Text style={styles.modalText}>{m}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+        </Pressable>
+      </Modal>
 
-        {/* Days */}
-        {daysArray.map((day) => {
-          const isToday =
-            day === new Date().getDate() &&
-            month === new Date().getMonth() &&
-            year === new Date().getFullYear();
+      {/* YEAR PICKER MODAL */}
+      <Modal transparent visible={showYearPicker} animationType="fade">
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowYearPicker(false)}
+        >
+          <View style={styles.modalBox}>
+            <ScrollView>
+              {years.map((yr) => (
+                <Pressable
+                  key={yr}
+                  style={styles.modalItem}
+                  onPress={() => {
+                    setCurrentDate(new Date(yr, month, 1));
+                    setShowYearPicker(false);
+                  }}
+                >
+                  <Text style={styles.modalText}>{yr}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+        </Pressable>
+      </Modal>
 
-          return (
-            <Pressable
-              key={day}
-              style={[styles.dayCell, isToday && styles.today]}
-              onPress={() => router.push(`/tabs/daylog?day=${day}&month=${month+1}&year=${year}`)}
-            >
-              <Text style={[styles.dayText, isToday && styles.todayText]}>
-                {day}
-              </Text>
-            </Pressable>
-          );
-        })}
+
+      {/* calendar wrapper */}
+      <View style={styles.calendarWrapper}>
+
+      {/* Calendar grid */}
+        <View style={styles.weekRow}>
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+            <Text key={d} style={styles.weekLabel}>
+              {d}
+            </Text>
+          ))}
+        </View>
+
+        <View style={styles.calendarGrid}>
+          {/* Empty cells before first day */}
+          {Array.from({ length: firstDay }).map((_, idx) => (
+            <View key={`empty-${idx}`} style={styles.dayCell} />
+          ))}
+
+          {/* Days */}
+          {daysArray.map((day) => {
+            const today =
+              day === new Date().getDate() &&
+              month === new Date().getMonth() &&
+              year === new Date().getFullYear();
+
+            const isSelected = selectedDay === day;
+
+            return (
+              <Pressable
+                key={day}
+                style={[
+                  styles.dayCell, 
+                  today && styles.today,
+                  isSelected && styles.selectedDay,
+                ]}
+                onPress={() => {
+                  setSelectedDay(day);
+                  router.push(`/tabs/daylog?day=${day}&month=${month+1}&year=${year}`);
+                }}
+              >
+                <Text 
+                  style={[
+                    styles.dayText, 
+                    today && styles.todayText,
+                    isSelected && styles.selectedDayText,
+                  ]}
+                >
+                  {day}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
       </View>
 
       
-    {/* FOOTER */}
+      {/* FOOTER */}
         <View style={styles.footer}>
             <Pressable onPress={() => router.push("/tabs/home")}>
               <Feather name="home" size={28} color={isHome ? "#fff" : "#2973bcff" } />
@@ -127,7 +232,7 @@ const styles = StyleSheet.create({
     gap: 20,
     marginTop: 10,
     marginBottom: 15,
-    marginLeft: 10,
+    marginLeft: 20,
   },
 
   title: {
@@ -141,12 +246,86 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 10,
+    marginTop: 10,
+    marginLeft: 15,
+    marginRight: 15,
   },
 
   monthText: {
     fontSize: 22,
     color: "#ffffff",
     fontWeight: "600",
+  },
+
+  /* NEW DROPDOWN ROW */
+  dropdownRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 15,
+    marginTop: 10,
+    marginBottom: 5,
+  },
+
+  dropdownBox: {
+    flexDirection: "row",
+    backgroundColor: "#ffffff33",
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 12,
+    gap: 10,
+    minWidth: 130,
+    justifyContent: "space-between",
+  },
+
+  dropdownText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  modalBox: {
+    width: "70%",
+    maxHeight: "60%",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    paddingVertical: 10,
+  },
+
+  modalItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+  },
+
+  modalText: {
+    fontSize: 18,
+    color: "#2973bcff",
+    textAlign: "center",
+  },
+
+
+  /* CALENDAR WRAPPER BOX */
+  calendarWrapper: {
+    backgroundColor: "#ffffff22",
+    borderRadius: 16,
+    padding: 15,
+    paddingBottom: 25,
+    borderWidth: 2,
+    borderColor: "#ffffff55",
+    marginTop: 20,
+    marginHorizontal: 20,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
   },
 
   weekRow: {
@@ -173,7 +352,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginVertical: 4,
-    borderRadius: 10,
+    borderRadius: 15,
   },
 
   dayText: {
@@ -189,6 +368,15 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontWeight: "700",
   },
+    /* SELECTED DAY */
+  selectedDay: {
+    backgroundColor: "#ffffffaa",
+  },
+
+  selectedDayText: {
+    color: "#2973bcff",
+    fontWeight: "800",
+  },
     footer: {
     position: 'absolute',
     bottom: 0,
@@ -200,5 +388,6 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     borderTopWidth: 2,
     borderTopColor: "#6ca0dc",
+    marginBottom: 10,
   },
 });
