@@ -45,6 +45,13 @@ export default function LoginScreen() {
             onChangeText={setPassword}
           />
 
+          <Pressable
+            onPress={() => router.push("/auth/reset-password")}
+            style={styles.forgotPasswordBtn}
+          >
+            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+          </Pressable>
+
           <Pressable style={styles.button} onPress={handleLogin}>
             <Text style={styles.buttonText}>Log In</Text>
           </Pressable>
@@ -94,6 +101,16 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 12,
     marginBottom: 15,
+  },
+    forgotPasswordBtn: {
+    width: "80%",
+    alignItems: "flex-start",
+    marginBottom: 20,
+  },
+  forgotPasswordText: {
+    color: "#2973bcff",
+    fontWeight: "600",
+    fontSize: 14,
   },
   button: {
     backgroundColor: '#6ca0dc',
