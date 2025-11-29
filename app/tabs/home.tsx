@@ -13,6 +13,7 @@ import {
   TextInput,
   View
 } from 'react-native';
+import MoodModal from "../tabs/MoodModal";
 
 
 const categories: { label: string }[] = [
@@ -27,10 +28,10 @@ const categories: { label: string }[] = [
 
 const moodColors: { [key: number]: string } = {
   1: "#d9534f",
-  2: "#f0ad4e",
-  3: "#ffd27f",
-  4: "#f7e06e",
-  5: "#65da7fff"
+  2: "#eb9011ff",
+  3: "#edab30ff",
+  4: "#e8c412ff",
+  5: "#33da57ff"
 };
 
 const sleepColors: { [key: number]: string } = {
@@ -46,7 +47,7 @@ const energyColors: { [key: number]: string } = {
   2: "#53dec9ff",
   3: "#64d9b4ff",
   4: "#65da7fff",
-  5: "#bee57bff"
+  5: "#a7e242ff"
 }
 
 export default function HomeScreen() {
@@ -69,21 +70,41 @@ export default function HomeScreen() {
 
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // collected data for logs
+  //collected data for logs
+  //mood
   const [moodRating, setMoodRating] = useState<number | null>(null);
-  const [sleepRating, setSleepRating] = useState<number | null>(null);
-  const [energyRating, setEnergyRating] = useState<number | null>(null);
-  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
-  const [notes, setNotes] = useState("");
+  const [showMoodModal, setShowMoodModal] = useState(false);
+  const [moodFeelings, setMoodFeelings] = useState<string[]>([]);
 
+
+  //sleep
+  const [sleepRating, setSleepRating] = useState<number | null>(null);
+  const [sleepHours, setSleepHours] = useState<number>(7); // default
+
+  //energy
+  const [energyRating, setEnergyRating] = useState<number | null>(null);
+
+  //activity
+  const [steps, setSteps] = useState<string>("0");
+  const [heartRate, setHeartRate] = useState<string>("");
+  const [weight, setWeight] = useState<string>("");
+
+  //nutrition
+  const [hydration, setHydration] = useState<number>(4); // 0..10
+  const healthinessOptions = ["Healthy", "Moderate", "Poor",];
+  const [healthiness, setHealthiness] = useState<string | null>(null);
+
+  //symptoms
+  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const symptomOptions = [ 
-    "Fatigue", 
-    "Headache", 
-    "Nausea", 
-    "Back Pain", 
-    "Anxiety", 
-    "Depression", 
+    "Fatigue", "Headache", "Nausea", "Back Pain", 
+    "Anxiety", "Depression", "Cramps", "Dizziness",
+    "Brain Fog", "Irritability", "Joint Pain", "Bloating",
+    "Chest Pain", "Low Appetite", "High Appetite",
   ]
+
+  //notes
+  const [notes, setNotes] = useState("");
 
 
   const toggleCategory = (label: string) => {
@@ -220,12 +241,48 @@ export default function HomeScreen() {
                 >
                   <Text style={styles.stripText}>{item.label}</Text>
 
-                  <Feather
-                    name={openCategories.includes(item.label) ? "minus" : "plus"}
-                    size={22}
-                    color="#fff"
-                  />
+                  {/* Wrap rating + icon together */}
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    {item.label === "Mood" && moodRating !== null && (
+                      <View
+                        style={[
+                          styles.selectedCircle,
+                          { backgroundColor: moodColors[moodRating] }
+                        ]}
+                      >
+                        <Text style={styles.selectedCircleText}>{moodRating}</Text>
+                      </View>
+                    )}
+                    {item.label === "Sleep" && sleepRating !== null && (
+                      <View
+                        style={[
+                          styles.selectedCircle,
+                          { backgroundColor: sleepColors[sleepRating] }
+                        ]}
+                      >
+                        <Text style={styles.selectedCircleText}>{sleepRating}</Text>
+                      </View>
+                    )}
+
+                    {item.label === "Energy" && energyRating !== null && (
+                      <View
+                        style={[
+                          styles.selectedCircle,
+                          { backgroundColor: energyColors[energyRating] }
+                        ]}
+                      >
+                        <Text style={styles.selectedCircleText}>{energyRating}</Text>
+                      </View>
+                    )}
+
+                    <Feather
+                      name={openCategories.includes(item.label) ? "minus" : "plus"}
+                      size={22}
+                      color="#fff"
+                    />
+                  </View>
                 </Pressable>
+
 
                 {/* Dropdown for mood */}
                 {item.label === "Mood" && openCategories.includes("Mood") && (
@@ -237,14 +294,33 @@ export default function HomeScreen() {
                         <Pressable
                           key={value}
                           onPress={() => {
-                          setMoodRating(value);
+                            setMoodRating(value);
+                            setShowMoodModal(true);
                           }}
-                          style={[styles.moodButton, { backgroundColor: moodColors[value] }]}                      
+                          style={[styles.moodButton, 
+                            { backgroundColor: moodColors[value] },
+                            moodRating === value && styles.selectedRatingRing,
+                          ]}                      
                         >
                           <Text style={styles.moodLabel}>{value}</Text>
                         </Pressable>
                       ))}
                     </View>
+
+                    {moodFeelings.length > 0 && (
+                    <View style={{ marginTop: 12 }}>
+                      <Text style={{ color: "#fff", fontWeight: "600", marginBottom: 6 }}>
+                        Feelings:
+                      </Text>
+                      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                        {moodFeelings.map((f) => (
+                          <View key={f} style={{ backgroundColor: "#ffffff33", padding: 6, borderRadius: 10 }}>
+                            <Text style={{ color: "#fff" }}>{f}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                    )}
                   </View>
                 )}
                 {/* Dropdown for sleep */}
@@ -257,7 +333,8 @@ export default function HomeScreen() {
                         <Pressable
                           key={rating}
                           style={[styles.sleepButton,
-                            { backgroundColor: sleepColors[rating]}
+                            { backgroundColor: sleepColors[rating]},
+                            sleepRating === rating && styles.selectedRatingRing,
                           ]} 
                           onPress={() => {
                             setSleepRating(rating);
@@ -267,7 +344,33 @@ export default function HomeScreen() {
                         </Pressable>
                       ))}
                     </View>
+                    {/* SLEEP HOURS SELECTOR */}
+                    <View style={{ marginTop: 20 }}>
+                      <Text style={styles.dropdownText}>Hours slept:</Text>
+
+                      <View style={styles.adjustRow}>
+                        <Pressable
+                          style={styles.adjustBtn}
+                          onPress={() =>
+                            setSleepHours((prev) => Math.max(0, +(prev - 0.5).toFixed(1)))
+                          }
+                        >
+                          <Text style={styles.adjustLabel}>–</Text>
+                        </Pressable>
+
+                        <Text style={styles.adjustValue}>{sleepHours.toFixed(1)} hrs</Text>
+
+                        <Pressable
+                          style={styles.adjustBtn}
+                          onPress={() =>
+                          setSleepHours((prev) => Math.min(24, +(prev + 0.5).toFixed(1)))
+                        }
+                      >
+                        <Text style={styles.adjustLabel}>+</Text>
+                      </Pressable>
+                    </View>
                   </View>
+                </View>  
                 )}
                 {/* Dropdown for energy */}
                 {item.label === "Energy" && openCategories.includes("Energy") && (
@@ -278,12 +381,13 @@ export default function HomeScreen() {
                       {[1, 2, 3, 4, 5].map((rating) => (
                         <Pressable
                           key={rating}
-                          style={[styles.sleepButton,
-                            { backgroundColor: energyColors[rating]}
-                          ]} 
                           onPress={() => {
                             setEnergyRating(rating);
                           }}
+                          style={[styles.sleepButton,
+                            { backgroundColor: energyColors[rating]},
+                            energyRating === rating && styles.selectedRatingRing,
+                          ]} 
                         >
                           <Text style={styles.sleepLabel}>{rating}</Text>
                         </Pressable>
@@ -291,6 +395,92 @@ export default function HomeScreen() {
                     </View>
                   </View>
                 )}
+
+                {/* activity dropdown */}
+                {item.label === "Activity" && openCategories.includes("Activity") && (
+                  <View style={styles.dropdown}>
+                    <Text style={styles.dropdownText}>Steps</Text>
+                    <TextInput
+                      style={styles.input}
+                      keyboardType="numeric"
+                      value={steps}
+                      onChangeText={setSteps}
+                      placeholder="0"
+                      placeholderTextColor="#fff"
+                    />
+
+                    <Text style={[styles.dropdownText, { marginTop: 15 }]}>Heart Rate (bpm)</Text>
+                    <TextInput
+                      style={styles.input}
+                      keyboardType="numeric"
+                      value={heartRate}
+                      onChangeText={setHeartRate}
+                      placeholder="bpm"
+                      placeholderTextColor="#fff"
+                    />
+
+                    <Text style={[styles.dropdownText, { marginTop: 15 }]}>Weight (lbs)</Text>
+                    <TextInput
+                      style={styles.input}
+                      keyboardType="numeric"
+                      value={weight}
+                      onChangeText={setWeight}
+                      placeholder="lbs"
+                      placeholderTextColor="#fff"
+                    />
+                  </View>
+                )}
+
+                { /* nutrition dropdown */ }
+                {item.label === "Nutrition" && openCategories.includes("Nutrition") && (
+                  <View style={styles.dropdown}>
+                    <Text style={styles.dropdownText}>Hydration (glasses of water)</Text>
+
+                    <View style={styles.adjustRow}>
+                      <Pressable
+                        style={styles.adjustBtn}
+                        onPress={() => setHydration((prev) => Math.max(0, prev - 1))}
+                      >
+                        <Text style={styles.adjustLabel}>–</Text>
+                      </Pressable>
+
+                      <Text style={styles.adjustValue}>{hydration}</Text>
+
+                      <Pressable
+                        style={styles.adjustBtn}
+                        onPress={() => setHydration((prev) => Math.min(10, prev + 1))}
+                      >
+                        <Text style={styles.adjustLabel}>+</Text>
+                      </Pressable>
+                    </View>
+
+                    <Text style={[styles.dropdownText, { marginTop: 20 }]}>Meal Healthiness</Text>
+
+                    <View style={styles.healthinessRow}>
+                      {healthinessOptions.map((opt) => (
+                        <Pressable
+                          key={opt}
+                          onPress={() => setHealthiness(opt)}
+                          style={[
+                            styles.healthBtn,
+                            healthiness === opt && styles.healthBtnSelected,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.healthBtnLabel,
+                              healthiness === opt && styles.healthBtnLabelSelected,
+                            ]}
+                          >
+                            {opt}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </View>
+                )}
+
+
                 {/* symptoms dropdown */}
                 {item.label === "Symptoms" && openCategories.includes("Symptoms") && (
                   <View style={styles.dropdown}>
@@ -341,6 +531,16 @@ export default function HomeScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <MoodModal
+        visible={showMoodModal}
+        onClose={() => setShowMoodModal(false)}
+        onSave={(feelings) => {
+          setMoodFeelings(feelings);
+          setShowMoodModal(false);
+         }}
+      />
+
 
       {/* FOOTER */}
       <View style={styles.footer}>
@@ -497,7 +697,7 @@ menuContainer: {
     alignItems: "center",
   },
   moodLabel: {
-    color: "#000000ff",
+    color: "#f2ececff",
     fontWeight: "700",
   },
 
@@ -514,14 +714,52 @@ menuContainer: {
     alignItems: "center",
   },
   sleepLabel: {
-    color: "#000000ff",
+    color: "#ffffffff",
     fontWeight: "700",
   },
 
+  /* Activity */
+  input: {
+    backgroundColor: "#ffffff55",
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+  },
+
+
+  /* Nutrition */
+  healthinessRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 10,
+    gap: 10,
+  },
+  healthBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    backgroundColor: "#ffffff33",
+    borderRadius: 12,
+  },
+  healthBtnSelected: {
+    backgroundColor: "#ffffffaa",
+  },
+  healthBtnLabel: {
+    color: "#2973bcff",
+    fontSize: 15,
+    fontWeight: "600"
+  },
+  healthBtnLabelSelected: {
+    color: "#2973bcff",
+    fontWeight: "600",
+  },
   /* Symptoms */ 
   symptomGrid: { 
     flexDirection: "row", 
-    flexWrap: "wrap", gap: 10, 
+    flexWrap: "wrap", 
+    gap: 10, 
   }, 
   symptomButton: { 
     paddingVertical: 8, 
@@ -530,10 +768,11 @@ menuContainer: {
     borderRadius: 10, 
   }, 
   symptomSelected: { 
-    backgroundColor: "#ffffffaa" 
+    backgroundColor: "#ffffffaa",
+    color: "#2973bcff" 
   }, 
   symptomLabel: { 
-    color: "#fff", 
+    color: "#2973bcff", 
     fontWeight: "600" 
   }, 
   
@@ -543,7 +782,9 @@ menuContainer: {
     color: "#fff", 
     padding: 12, 
     borderRadius: 12, 
-    minHeight: 180, 
+    minHeight: 180,
+    fontSize: 15,
+    fontWeight: "600" 
   },
 
   footer: {
@@ -559,4 +800,50 @@ menuContainer: {
     borderTopColor: "#6ca0dc",
     marginBottom: 10,
   },
+
+  adjustRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  marginTop: 10,
+  gap: 20,
+},
+adjustBtn: {
+  width: 40,
+  height: 40,
+  borderRadius: 20,
+  backgroundColor: "#ffffff55",
+  justifyContent: "center",
+  alignItems: "center",
+},
+adjustLabel: {
+  color: "#fff",
+  fontSize: 24,
+  fontWeight: "800",
+},
+adjustValue: {
+  color: "#fff",
+  fontSize: 20,
+  fontWeight: "700",
+},
+
+selectedCircle: {
+  width: 40,
+  height: 40,
+  borderRadius: 25,
+  backgroundColor: "#ffffff44",
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: 10,
+},
+
+selectedCircleText: {
+  color: "#f6f2f2ff",
+  fontWeight: "700",
+},
+
+selectedRatingRing: {
+  borderWidth: 3,
+  borderColor: "#fff",
+},
 });
