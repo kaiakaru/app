@@ -4,37 +4,47 @@ import * as SecureStore from "expo-secure-store";
 import React, { useState } from 'react';
 import {
   Alert, Keyboard,
-  Pressable, StyleSheet, Text,
+  Platform,
+  Pressable,
+  StyleSheet, Text,
   TextInput,
   TouchableWithoutFeedback,
   View
 } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
+// TEST
+const fallback = Platform.select({
+  ios: 'http://localhost:5000',
+  android: 'http://10.0.2.2:5000',
+  default: 'http://192.168.1.152:5000',
+});
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? fallback;
 const AUTH_BASE_URL = `${API_URL}/auth`;
 
 export default function SignUpScreen() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSignUp = async () => {
     setError(null);
+
+
     const trimmedEmail = email.trim().toLowerCase();
     if (!trimmedEmail || !password) {
-      setError('Please enter your email and password.');
+      setError("Please enter your email and password.");
       return;
     }
 
     if (!trimmedEmail.includes('@') || !trimmedEmail.includes('.')) {
-      setError('Please enter a valid email address.');
+      setError("Please enter a valid email address.");
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+      setError("Password must be at least 6 characters long.");
       return;
     }
 
@@ -54,23 +64,21 @@ export default function SignUpScreen() {
       if (!res.ok) {
         const message = data?.error || "Sign up failed. Please try again.";
         setError(message);
-        setLoading(false);
         return;
       }
-
+      // backend should return token email userId on successful signup
       const { token, userId, email: returnedEmail } = data;
 
       if (!token || !userId) {
-        setError('Invalid response from server. Please try again.');
-        setLoading(false);
+        setError("Invalid response from server. Please try again.");
         return;
       }
 
-      await SecureStore.setItemAsync('authToken', token);
-      await SecureStore.setItemAsync('userId', String(userId));
-      await SecureStore.setItemAsync('userEmail', String(returnedEmail || trimmedEmail));
+      await SecureStore.setItemAsync("authToken", token);
+      await SecureStore.setItemAsync("userId", String(userId));
+      await SecureStore.setItemAsync("userEmail", String(returnedEmail || trimmedEmail));
 
-      Alert.alert('Success', 'Account created successfully!');
+      Alert.alert("Success", "Account created successfully!");
 
     router.replace("/tabs/home");
     } catch (err) {

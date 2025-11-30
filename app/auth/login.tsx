@@ -14,22 +14,22 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const fallback = Platform.select({
-  ios: 'http://localhost:3000',
-  android: 'http://10.0.2.2:3000',
-  default: 'http://192.168.1.152:3000',
+  ios: 'http://localhost:5000',
+  android: 'http://10.0.2.2:5000',
+  default: 'http://192.168.1.152:5000',
 });
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? fallback;
 
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     const trimmedEmail = email.trim().toLowerCase();
     if (!trimmedEmail || !password) {
-      Alert.alert('Access Denied', 'Please enter your email and password.');
+      Alert.alert("Access Denied', 'Please enter your email and password.");
       return;
     }
 
@@ -44,32 +44,32 @@ export default function LoginScreen() {
         body: JSON.stringify({ email: trimmedEmail, password }),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        let message = 'Login failed. Please try again.';
-        try {
-          const er = await res.json();
-          if (er?.message) message = er.message;
-          if (er?.error) message = er.error;
-        } catch {}
+        const message = data?.error || data?.message ||  "Login failed. Please try again.";
         throw new Error(message);
       }
 
-      const data = await res.json() as { token?: string; user?: any };
-      const authToken = data?.token;
-      const authUser = data?.user;
+     const { token, userId, email: returnedEmail } = data;
 
-      if(typeof authToken !== 'string' || authToken.length < 10 || !authUser || !(authUser.id || authUser._id)) {
-        throw new Error('Invalid login response. Please sign up or try again.'); }
-
+     if (!token || !userId) {
+        throw new Error("Invalid response from server. Please try again.");
+      }
+      
+      const authUser = {
+        id: userId,
+        email: returnedEmail || trimmedEmail,
+      };
 
       //const { token, user } = await res.json();
-      await AsyncStorage.setItem('@auth_token', authToken);
+      await AsyncStorage.setItem('@auth_token', token);
       await AsyncStorage.setItem('@auth_user', JSON.stringify(authUser));
 
 
     router.replace('/tabs/home');
     } catch (e: any) {
-      Alert.alert('Login Failed', e?.message ?? 'An unexpected error occurred.');
+      Alert.alert("Login Failed", e?.message ?? "An unexpected error occurred.");
     } finally {
       setLoading(false);
     } // navigates to main app
