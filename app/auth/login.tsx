@@ -1,22 +1,78 @@
 // app/auth/login.tsx
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Link, router } from "expo-router";
 import React, { useState } from 'react';
 import {
+  Alert,
   Keyboard,
-  Pressable, SafeAreaView, StyleSheet, Text,
+  Platform,
+  Pressable, StyleSheet, Text,
   TextInput,
   TouchableWithoutFeedback,
-  View,
+  View
 } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
+
+const fallback = Platform.select({
+  ios: 'http://localhost:3000',
+  android: 'http://10.0.2.2:3000',
+  default: 'http://192.168.1.152:3000',
+});
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? fallback;
 
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    // TODO: add auth logic later
-    router.replace("/tabs/home"); // navigates to main app
+  const handleLogin = async () => {
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail || !password) {
+      Alert.alert('Access Denied', 'Please enter your email and password.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: trimmedEmail, password }),
+      });
+
+      if (!res.ok) {
+        let message = 'Login failed. Please try again.';
+        try {
+          const er = await res.json();
+          if (er?.message) message = er.message;
+          if (er?.error) message = er.error;
+        } catch {}
+        throw new Error(message);
+      }
+
+      const data = await res.json() as { token?: string; user?: any };
+      const authToken = data?.token;
+      const authUser = data?.user;
+
+      if(typeof authToken !== 'string' || authToken.length < 10 || !authUser || !(authUser.id || authUser._id)) {
+        throw new Error('Invalid login response. Please sign up or try again.'); }
+
+
+      //const { token, user } = await res.json();
+      await AsyncStorage.setItem('@auth_token', authToken);
+      await AsyncStorage.setItem('@auth_user', JSON.stringify(authUser));
+
+
+    router.replace('/tabs/home');
+    } catch (e: any) {
+      Alert.alert('Login Failed', e?.message ?? 'An unexpected error occurred.');
+    } finally {
+      setLoading(false);
+    } // navigates to main app
   };
 
   return (
