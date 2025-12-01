@@ -1,11 +1,16 @@
 // app/tabs/settings.tsx
 import { router } from 'expo-router';
-import React from 'react';
 import { Alert, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 
 export default function Settings() {
   return (
     <SafeAreaView style={styles.container}>
+
+      {/* Balance+ Header → takes you back to Home */}
+      <Pressable onPress={() => router.push("/tabs/home")}>
+        <Text style={styles.header}>Balance+</Text>
+      </Pressable>
+
       <View style={styles.inner}>
         <Text style={styles.title}>Settings</Text>
 
@@ -60,8 +65,24 @@ export default function Settings() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#96B9E7' },
+
+  header: {
+    fontSize: 30,
+    fontWeight: '800',
+    color: '#2973bcff',
+    textAlign: 'center',
+    marginTop: 20,
+    marginBottom: 10,
+  },
+
   inner: { padding: 20 },
-  title: { fontSize: 26, fontWeight: '700', color: '#2973bcff', marginBottom: 12 },
+
+  title: { 
+    fontSize: 26, 
+    fontWeight: '700', 
+    color: '#2973bcff', 
+    marginBottom: 12 
+  },
 
   item: {
     backgroundColor: '#6ca0dc',
@@ -70,10 +91,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 12,
   },
+
   itemText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
 });
-
