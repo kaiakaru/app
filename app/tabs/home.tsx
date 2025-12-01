@@ -138,10 +138,6 @@ export default function HomeScreen() {
           <Pressable onPress={() => router.push("/tabs/profile")}>
             <Feather name="user" size={28} color="#2973bcff" />
           </Pressable>
-
-          <Pressable onPress={() => setMenuOpen(!menuOpen)}>
-            <Feather name="menu" size={30} color="#2973bcff" />
-          </Pressable>
         </View>
       </View>
 
@@ -795,10 +791,10 @@ menuContainer: {
     backgroundColor: '#96B9E7',
     flexDirection: "row",
     justifyContent: "space-around",
-    paddingVertical: 18,
+    paddingVertical: 25,
     borderTopWidth: 2,
     borderTopColor: "#6ca0dc",
-    marginBottom: 10,
+    marginBottom: 0,
   },
 
   adjustRow: {
