@@ -29,7 +29,7 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     const trimmedEmail = email.trim().toLowerCase();
     if (!trimmedEmail || !password) {
-      Alert.alert("Access Denied', 'Please enter your email and password.");
+      Alert.alert("Access Denied", "Please enter your email and password.");
       return;
     }
 
