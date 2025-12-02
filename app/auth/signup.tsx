@@ -14,13 +14,14 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 // TEST
 const fallback = Platform.select({
-  ios: 'http://localhost:5000',
-  android: 'http://10.0.2.2:5000',
-  default: 'http://192.168.1.152:5000',
+  ios: 'http://localhost:3000',
+  android: 'http://10.0.2.2:3000',
+  default: 'http://172.20.10.4:3000',
 });
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? fallback;
+const API_URL = "https://plunderable-invariantly-silas.ngrok-free.dev";
 const AUTH_BASE_URL = `${API_URL}/auth`;
+
 
 export default function SignUpScreen() {
   const [email, setEmail] = useState("");
@@ -29,6 +30,7 @@ export default function SignUpScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const handleSignUp = async () => {
+    console.log("🔵 Signup button pressed!");
     setError(null);
 
 
