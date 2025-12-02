@@ -19,7 +19,17 @@ router.post("/signup", async (req, res) => {
     const hash = await bcrypt.hash(password, BCRYPT_ROUNDS);
     const user = await User.create({ email: email.toLowerCase().trim(), passwordHash: hash });
 
-    return res.json({ message: "User created", userId: user._id });
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+    return res.json({
+      token,
+      userId: user._id,
+      email: user.email,
+    });
+
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Server error" });
