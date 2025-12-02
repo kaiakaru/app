@@ -1,21 +1,94 @@
 // app/auth/signup.tsx
 import { Link, router } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import React, { useState } from 'react';
 import {
-  Keyboard,
-  Pressable, SafeAreaView, StyleSheet, Text,
+  Alert, Keyboard,
+  Platform,
+  Pressable,
+  StyleSheet, Text,
   TextInput,
   TouchableWithoutFeedback,
-  View,
+  View
 } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
+// TEST
+const fallback = Platform.select({
+  ios: 'http://localhost:3000',
+  android: 'http://10.0.2.2:3000',
+  default: 'http://172.20.10.4:3000',
+});
+
+const API_URL = "https://plunderable-invariantly-silas.ngrok-free.dev";
+const AUTH_BASE_URL = `${API_URL}/auth`;
+
 
 export default function SignUpScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSignUp = () => {
-    // TODO: add real sign-up logic later
+  const handleSignUp = async () => {
+    console.log("🔵 Signup button pressed!");
+    setError(null);
+
+
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail || !password) {
+      setError("Please enter your email and password.");
+      return;
+    }
+
+    if (!trimmedEmail.includes('@') || !trimmedEmail.includes('.')) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch(`${AUTH_BASE_URL}/signup`, {
+        method: "POST", 
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: trimmedEmail, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        const message = data?.error || "Sign up failed. Please try again.";
+        setError(message);
+        return;
+      }
+      // backend should return token email userId on successful signup
+      const { token, userId, email: returnedEmail } = data;
+
+      if (!token || !userId) {
+        setError("Invalid response from server. Please try again.");
+        return;
+      }
+
+      await SecureStore.setItemAsync("authToken", token);
+      await SecureStore.setItemAsync("userId", String(userId));
+      await SecureStore.setItemAsync("userEmail", String(returnedEmail || trimmedEmail));
+
+      Alert.alert("Success", "Account created successfully!");
+
     router.replace("/tabs/home");
+    } catch (err) {
+      console.error('Sign up error:', err);
+      setError('An unexpected error occurred. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
   };
 
 

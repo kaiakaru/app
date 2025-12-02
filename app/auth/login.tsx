@@ -1,22 +1,79 @@
 // app/auth/login.tsx
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Link, router } from "expo-router";
 import React, { useState } from 'react';
 import {
+  Alert,
   Keyboard,
-  Pressable, SafeAreaView, StyleSheet, Text,
+  Platform,
+  Pressable, StyleSheet, Text,
   TextInput,
   TouchableWithoutFeedback,
-  View,
+  View
 } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 
+const fallback = Platform.select({
+  ios: 'http://localhost:3000',
+  android: 'http://10.0.2.2:3000',
+  default: 'http://172.20.10.4:3000',
+});
+
+const API_URL = "https://plunderable-invariantly-silas.ngrok-free.dev";
+const AUTH_BASE_URL = `${API_URL}/auth`;
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    // TODO: add auth logic later
-    router.replace("/tabs/home"); // navigates to main app
+  const handleLogin = async () => {
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail || !password) {
+      Alert.alert("Access Denied", "Please enter your email and password.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: trimmedEmail, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        const message = data?.error || data?.message ||  "Login failed. Please try again.";
+        throw new Error(message);
+      }
+
+     const { token, userId, email: returnedEmail } = data;
+
+     if (!token || !userId) {
+        throw new Error("Invalid response from server. Please try again.");
+      }
+      
+      const authUser = {
+        id: userId,
+        email: returnedEmail || trimmedEmail,
+      };
+
+      //const { token, user } = await res.json();
+      await AsyncStorage.setItem('@auth_token', token);
+      await AsyncStorage.setItem('@auth_user', JSON.stringify(authUser));
+
+
+    router.replace('/tabs/home');
+    } catch (e: any) {
+      Alert.alert("Login Failed", e?.message ?? "An unexpected error occurred.");
+    } finally {
+      setLoading(false);
+    } // navigates to main app
   };
 
   return (
