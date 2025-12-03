@@ -1,48 +1,84 @@
 // app/tabs/history.tsx
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import React, { useState } from "react";
-import { Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  Modal,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 export default function HistoryScreen() {
+  // ------------------------
+  // STATE
+  // ------------------------
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
+  // days with logs
+  const [loggedDays, setLoggedDays] = useState<Set<number>>(new Set());
+
+  // dropdown modal visibility
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [showYearPicker, setShowYearPicker] = useState(false);
 
+  // ------------------------
+  // DERIVED VALUES
+  // ------------------------
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  // first day of month (0–6)
   const firstDay = new Date(year, month, 1).getDay();
-
-  // number of days in month
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-
   const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
+  // ------------------------
+  // LOAD LOGS FOR MONTH
+  // ------------------------
+  useEffect(() => {
+    async function loadMonthlyLogs() {
+      const days = new Set<number>();
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const mm = String(month + 1).padStart(2, "0");
+        const dd = String(d).padStart(2, "0");
+        const key = `dailyLog-${year}-${mm}-${dd}`;
+
+        const item = await AsyncStorage.getItem(key);
+        if (item) days.add(d);
+      }
+
+      setLoggedDays(days);
+    }
+
+    loadMonthlyLogs();
+  }, [month, year, daysInMonth]);
+
+  // ------------------------
+  // MONTH/YEAR DATA
+  // ------------------------
   const monthNames = [
-    "January", "February", "March",
-    "April", "May", "June",
-    "July", "August", "September",
-    "October", "November", "December"
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
   ];
 
   const years = Array.from({ length: 20 }, (_, i) => year - 10 + i);
 
-  const prevMonth = () => {
-    setCurrentDate(new Date(year, month - 1, 1));
-  };
-
-  const nextMonth = () => {
-    setCurrentDate(new Date(year, month + 1, 1));
-  };
+  const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
+  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
 
   const isHome = false;
   const isStats = false;
   const isHistory = true;
 
+  // ------------------------
+  // RENDER
+  // ------------------------
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -50,7 +86,6 @@ export default function HistoryScreen() {
         <Pressable onPress={() => router.push("/tabs/home")}>
           <Feather name="arrow-left" size={26} color="#ffffff" />
         </Pressable>
-
         <Text style={styles.title}>History</Text>
       </View>
 
@@ -72,10 +107,9 @@ export default function HistoryScreen() {
         </Pressable>
       </View>
 
-      {/* Month and year dropdowns */}
+      {/* Month / Year Dropdowns */}
       <View style={styles.dropdownRow}>
-        
-        {/* MONTH DROPDOWN */}
+        {/* Month */}
         <Pressable
           style={styles.dropdownBox}
           onPress={() => setShowMonthPicker(true)}
@@ -84,7 +118,7 @@ export default function HistoryScreen() {
           <Feather name="chevron-down" size={20} color="#fff" />
         </Pressable>
 
-        {/* YEAR DROPDOWN */}
+        {/* Year */}
         <Pressable
           style={styles.dropdownBox}
           onPress={() => setShowYearPicker(true)}
@@ -94,7 +128,7 @@ export default function HistoryScreen() {
         </Pressable>
       </View>
 
-      {/* MONTH PICKER MODAL */}
+      {/* MONTH PICKER */}
       <Modal transparent visible={showMonthPicker} animationType="fade">
         <Pressable
           style={styles.modalOverlay}
@@ -119,7 +153,7 @@ export default function HistoryScreen() {
         </Pressable>
       </Modal>
 
-      {/* YEAR PICKER MODAL */}
+      {/* YEAR PICKER */}
       <Modal transparent visible={showYearPicker} animationType="fade">
         <Pressable
           style={styles.modalOverlay}
@@ -144,11 +178,9 @@ export default function HistoryScreen() {
         </Pressable>
       </Modal>
 
-
-      {/* calendar wrapper */}
+      {/* Calendar */}
       <View style={styles.calendarWrapper}>
-
-      {/* Calendar grid */}
+        {/* Week labels */}
         <View style={styles.weekRow}>
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
             <Text key={d} style={styles.weekLabel}>
@@ -158,12 +190,12 @@ export default function HistoryScreen() {
         </View>
 
         <View style={styles.calendarGrid}>
-          {/* Empty cells before first day */}
+          {/* Empty cells */}
           {Array.from({ length: firstDay }).map((_, idx) => (
             <View key={`empty-${idx}`} style={styles.dayCell} />
           ))}
 
-          {/* Days */}
+          {/* Calendar Days */}
           {daysArray.map((day) => {
             const today =
               day === new Date().getDate() &&
@@ -176,45 +208,49 @@ export default function HistoryScreen() {
               <Pressable
                 key={day}
                 style={[
-                  styles.dayCell, 
+                  styles.dayCell,
                   today && styles.today,
                   isSelected && styles.selectedDay,
                 ]}
                 onPress={() => {
                   setSelectedDay(day);
-                  router.push(`/tabs/daylog?day=${day}&month=${month+1}&year=${year}`);
+                  router.push(
+                    `/tabs/daylog?day=${day}&month=${month + 1}&year=${year}`
+                  );
                 }}
               >
-                <Text 
+                <Text
                   style={[
-                    styles.dayText, 
+                    styles.dayText,
                     today && styles.todayText,
                     isSelected && styles.selectedDayText,
                   ]}
                 >
                   {day}
                 </Text>
+
+                {/* Dot indicator */}
+                {loggedDays.has(day) && <View style={styles.dot} />}
               </Pressable>
             );
           })}
         </View>
       </View>
 
-      
-      {/* FOOTER */}
-        <View style={styles.footer}>
-            <Pressable onPress={() => router.push("/tabs/home")}>
-              <Feather name="home" size={28} color={isHome ? "#fff" : "#2973bcff" } />
-            </Pressable>
-      
-            <Pressable onPress={() => router.push("/tabs/stats")}>
-              <Feather name="bar-chart-2" size={28} color={isStats? "#fff" : "#2973bcff" } />
-            </Pressable>
-      
-            <Pressable onPress={() => router.push("/tabs/history")}>
-                <Feather name="calendar" size={28} color={isHistory? "#fff" : "#2973bcff" } />
-            </Pressable>
-        </View>
+      {/* Footer */}
+      <View style={styles.footer}>
+        <Pressable onPress={() => router.push("/tabs/home")}>
+          <Feather name="home" size={28} color="#2973bcff" />
+        </Pressable>
+
+        <Pressable onPress={() => router.push("/tabs/stats")}>
+          <Feather name="bar-chart-2" size={28} color="#2973bcff" />
+        </Pressable>
+
+        <Pressable onPress={() => router.push("/tabs/history")}>
+          <Feather name="calendar" size={28} color="#fff" />
+        </Pressable>
+      </View>
     </SafeAreaView>
   );
 }
@@ -224,6 +260,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#96B9E7",
     paddingHorizontal: 20,
+  },
+
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#ffffff",
+    marginTop: 3,
   },
 
   headerRow: {
@@ -257,7 +301,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  /* NEW DROPDOWN ROW */
   dropdownRow: {
     flexDirection: "row",
     justifyContent: "center",
@@ -310,8 +353,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-
-  /* CALENDAR WRAPPER BOX */
   calendarWrapper: {
     backgroundColor: "#ffffff22",
     borderRadius: 16,
@@ -368,7 +409,7 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontWeight: "700",
   },
-    /* SELECTED DAY */
+
   selectedDay: {
     backgroundColor: "#ffffffaa",
   },
@@ -377,12 +418,13 @@ const styles = StyleSheet.create({
     color: "#2973bcff",
     fontWeight: "800",
   },
-    footer: {
-    position: 'absolute',
+
+  footer: {
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#96B9E7',
+    backgroundColor: "#96B9E7",
     flexDirection: "row",
     justifyContent: "space-around",
     paddingVertical: 18,
