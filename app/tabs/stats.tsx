@@ -1,8 +1,9 @@
 // app/tabs/stats.tsx
-import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useState } from "react";
+import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Dimensions,
   Pressable,
