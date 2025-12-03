@@ -1,15 +1,15 @@
 // app/tabs/daylog.tsx
 import { Feather } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   View,
-  ActivityIndicator,
 } from "react-native";
 
 type DailyLog = {
@@ -78,7 +78,7 @@ export default function DayLogScreen() {
           color="#fff"
           onPress={() => router.back()}
         />
-        <Text style={styles.title}>Day Log</Text>
+        <Text style={styles.title}>Past Log</Text>
       </View>
 
       <Text style={styles.dateText}>{dateLabel}</Text>
@@ -118,7 +118,7 @@ export default function DayLogScreen() {
 
           <Section title="Activity">
             <Text style={styles.value}>Steps: {log.steps || "-"}</Text>
-            <Text style={styles.value}>Heart Rate: {log.heartRate || "-"}</Text>
+            <Text style={styles.value}>Resting Heart Rate: {log.heartRate || "-"}</Text>
             <Text style={styles.value}>Weight: {log.weight || "-"}</Text>
           </Section>
 
@@ -181,6 +181,7 @@ const styles = StyleSheet.create({
     gap: 20,
     marginTop: 10,
     marginBottom: 15,
+    marginLeft: 15,
   },
   title: {
     color: "#fff",
@@ -188,8 +189,11 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   dateText: {
-    color: "#fff",
+    color: "#2973bcff",
+    fontSize: 16,
+    fontWeight: '600',
     marginBottom: 15,
+    marginLeft: 15,
   },
   center: {
     flex: 1,
@@ -207,6 +211,10 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     borderWidth: 1,
     borderColor: "#ffffff55",
+    marginLeft: 15,
+    marginRight: 15,
+
+
   },
   sectionTitle: {
     color: "#fff",

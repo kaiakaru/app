@@ -103,13 +103,7 @@ export default function StatsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* HEADER */}
-      <View style={styles.headerRow}>
-        <Text style={styles.appName}>Balance+</Text>
-        <Pressable onPress={() => router.push("/tabs/profile")}>
-          <Feather name="user" size={28} color="#2973bcff" />
-        </Pressable>
-      </View>
+
 
       <ScrollView
         showsVerticalScrollIndicator={false}
