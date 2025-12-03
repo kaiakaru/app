@@ -1,7 +1,7 @@
 // app/tabs/home.tsx
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 //local storage
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -51,7 +51,7 @@ const energyColors: { [key: number]: string } = {
   2: "#53dec9ff",
   3: "#64d9b4ff",
   4: "#65da7fff",
-  5: "#a7e242ff"
+  5: "#95e40eff"
 };
 
 type DailyLog = {
@@ -75,6 +75,9 @@ const STORAGE_PREFIX = "dailyLog-";
 const getDateKey = (date: Date) => {
   return STORAGE_PREFIX + date.toISOString().slice(0, 10);
 };
+
+
+
 
 export default function HomeScreen() {
   const scrollRef = useRef<ScrollView>(null);
@@ -109,12 +112,12 @@ export default function HomeScreen() {
   const [energyRating, setEnergyRating] = useState<number | null>(null);
 
   // activity
-  const [steps, setSteps] = useState<string>("0");
+  const [steps, setSteps] = useState<string>("");
   const [heartRate, setHeartRate] = useState<string>("");
   const [weight, setWeight] = useState<string>("");
 
   // nutrition
-  const [hydration, setHydration] = useState<number>(4); // 0..10
+  const [hydration, setHydration] = useState<number>(0); // 0..10
   const healthinessOptions = ["Healthy", "Moderate", "Poor"];
   const [healthiness, setHealthiness] = useState<string | null>(null);
 
@@ -129,6 +132,36 @@ export default function HomeScreen() {
 
   // notes
   const [notes, setNotes] = useState("");
+
+  useEffect(() => {
+    const loadToday = async () => {
+      try {
+        const key = getDateKey(new Date());
+        const saved = await AsyncStorage.getItem(key);
+
+        if (!saved) return;
+
+        const log = JSON.parse(saved) as DailyLog;
+
+        setMoodRating(log.moodRating ?? null);
+        setMoodFeelings(log.moodFeelings ?? []);
+        setSleepRating(log.sleepRating ?? null);
+        setSleepHours(log.sleepHours ?? 7);
+        setEnergyRating(log.energyRating ?? null);
+        setSteps(log.steps ?? "0");
+        setHeartRate(log.heartRate ?? "");
+        setWeight(log.weight ?? "");
+        setHydration(log.hydration ?? 4);
+        setHealthiness(log.healthiness ?? null);
+        setSelectedSymptoms(log.selectedSymptoms ?? []);
+        setNotes(log.notes ?? "");
+      } catch (err) {
+        console.error("Error loading today's log", err);
+      }
+    };
+
+    loadToday();
+  }, []);
 
   // handleSaveLog function
   const handleSaveLog = async () => {
@@ -180,6 +213,8 @@ export default function HomeScreen() {
   const isHome = true;
   const isStats = false;
   const isHistory = false;
+
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -249,45 +284,21 @@ export default function HomeScreen() {
             </Text>
           </View>
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.dayRow}
-          >
-            {daysOfWeek.map((day) => (
-              <Pressable
-                key={day}
-                style={[
-                  styles.dayButton,
-                  selectedDay === day && styles.daySelected,
-                ]}
-                onPress={() => setSelectedDay(day)}
-              >
-                <Text
-                  style={[
-                    styles.dayText,
-                    selectedDay === day && styles.dayTextSelected,
-                  ]}
-                >
-                  {day.slice(0, 3)}
-                </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
+
 
           <Text style={styles.screenName}>Daily Log</Text>
         
           <View style={styles.stack}>
             {categories.map((item) => (
-              <View key={item.label}>
+              <View key={item.label} style={styles.categoryCard}>
                 <Pressable
-                  style={styles.strip}
-                  onPress={() => toggleCategory(item.label)}
+
+                  onPress={() => toggleCategory(item.label)} style={styles.headerRowFix}
                 >
-                  <Text style={styles.stripText}>{item.label}</Text>
+                  <Text style={styles.categoryLabel}>{item.label}</Text>
 
                   {/* Wrap rating + icon together */}
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <View style={styles.rightCluster}>
                     {item.label === "Mood" && moodRating !== null && (
                       <View
                         style={[
@@ -338,8 +349,12 @@ export default function HomeScreen() {
                         <Pressable
                           key={value}
                           onPress={() => {
-                            setMoodRating(value);
-                            setShowMoodModal(true);
+                            if (moodRating === value) {
+                              setMoodRating(null);
+                            } else {
+                              setMoodRating(value);
+                              setShowMoodModal(true);
+                            }
                           }}
                           style={[
                             styles.moodButton, 
@@ -354,7 +369,7 @@ export default function HomeScreen() {
 
                     {moodFeelings.length > 0 && (
                       <View style={{ marginTop: 12 }}>
-                        <Text style={{ color: "#fff", fontWeight: "600", marginBottom: 6 }}>
+                        <Text style={{ color: "#2973bcff", fontWeight: "600", marginBottom: 6 }}>
                           Feelings:
                         </Text>
                         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
@@ -384,7 +399,11 @@ export default function HomeScreen() {
                             sleepRating === rating && styles.selectedRatingRing,
                           ]} 
                           onPress={() => {
-                            setSleepRating(rating);
+                            if (sleepRating === rating) {
+                              setSleepRating(null);
+                            } else {
+                              setSleepRating(rating);
+                            }
                           }}
                         >
                           <Text style={styles.sleepLabel}>{rating}</Text>
@@ -431,7 +450,11 @@ export default function HomeScreen() {
                         <Pressable
                           key={rating}
                           onPress={() => {
-                            setEnergyRating(rating);
+                            if (energyRating === rating) {
+                              setEnergyRating(null);
+                            } else {
+                              setEnergyRating(rating);
+                            }
                           }}
                           style={[
                             styles.sleepButton,
@@ -459,7 +482,7 @@ export default function HomeScreen() {
                       placeholderTextColor="#fff"
                     />
 
-                    <Text style={[styles.dropdownText, { marginTop: 15 }]}>Heart Rate (bpm)</Text>
+                    <Text style={[styles.dropdownText, { marginTop: 15 }]}> Resting Heart Rate (bpm)</Text>
                     <TextInput
                       style={styles.input}
                       keyboardType="numeric"
@@ -563,12 +586,12 @@ export default function HomeScreen() {
                       value={notes}
                       onChangeText={setNotes}
                       placeholder="Write your thoughts..."
-                      placeholderTextColor="#545353ff"
+                      placeholderTextColor="#fdfdfdff"
                       onFocus={() => {
                         // autoscroll
                         setTimeout(() => {
                           scrollRef.current?.scrollTo({
-                            y: 600,
+                            y: 2000,
                             animated: true,
                           });
                         }, 200);
@@ -620,7 +643,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#96B9E7',
   },
   scroll: {
-    paddingBottom: 65,
+    paddingBottom: 150,
   },
   appName: {
     fontSize: 28,
@@ -636,7 +659,7 @@ const styles = StyleSheet.create({
     marginLeft: 20,
     marginRight: 20,
     marginTop: 10,
-    marginBottom: 10,
+    marginBottom: 5,
   },
   menuOverlay: {
     position: "absolute",
@@ -673,64 +696,45 @@ const styles = StyleSheet.create({
     fontSize: 26,
     paddingLeft: 20,
     fontWeight: "800",
-    color: '#f4f6f9ff'
+    color: '#f4f6f9ff',
+    marginBottom: 15,
   },
   dateRow: {
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "flex-start",
     marginLeft: 20,
-    marginBottom: 20,
-    gap: 10,
+    marginBottom: 15,
+    gap: 5,
   },
   dateText: {
     fontSize: 16,
     color: '#2973bcff',
   },
-  dayRow: {
-    flexDirection: 'row',
-    paddingHorizontal: 10,
-    marginBottom: 25,
-  },
-  dayButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    marginRight: 10,
-    borderRadius: 10,
-    backgroundColor: '#e3ecf2',
-  },
-  daySelected: {
-    backgroundColor: '#6ca0dc',
-  },
-  dayText: {
-    color: '#4a627a',
-    fontWeight: '500',
-  },
-  dayTextSelected: {
-    color: '#fff',
-  },
   stack: {
     width: '100%',
     flexDirection: 'column',
   },
-  strip: {
-    width: '100%',
-    paddingVertical: 30,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#6ca0dc',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  categoryCard: {
+    backgroundColor: "#ffffff22",
+    borderRadius: 18,
+    padding: 25,
+    marginBottom: 14,
+    marginLeft: 15,
+    marginRight: 15,
   },
-  stripText: {
+  categoryHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  categoryLabel: {
+    color: "#fff",
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#f4f6f9ff',
+    fontWeight: "700",
   },
   dropdown: {
-    padding: 15,
-    backgroundColor: "#96B9E7",
+    paddingVertical: 10,
   },
   dropdownText: {
     fontSize: 16,
@@ -911,4 +915,18 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
   },
+  headerRowFix: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  width: "100%",
+},
+
+rightCluster: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "flex-end",
+  gap: 10,
+  minWidth: 90, // prevents wrapping
+},
 });

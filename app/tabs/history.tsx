@@ -82,10 +82,7 @@ export default function HistoryScreen() {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <View style={styles.headerRow}>
-        <Pressable onPress={() => router.push("/tabs/home")}>
-          <Feather name="arrow-left" size={26} color="#ffffff" />
-        </Pressable>
+      <View style={styles.headerRow}> 
         <Text style={styles.title}>History</Text>
       </View>
 
@@ -427,9 +424,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#96B9E7",
     flexDirection: "row",
     justifyContent: "space-around",
-    paddingVertical: 18,
+    paddingVertical: 25,
     borderTopWidth: 2,
     borderTopColor: "#6ca0dc",
-    marginBottom: 10,
+    marginBottom: 0,
   },
 });
