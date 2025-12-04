@@ -533,7 +533,13 @@ export default function HomeScreen() {
                       {healthinessOptions.map((opt) => (
                         <Pressable
                           key={opt}
-                          onPress={() => setHealthiness(opt)}
+                          onPress={() => {
+                            if (healthiness === opt) {
+                              setHealthiness(null);
+                            } else {
+                              setHealthiness(opt);
+                            }
+                          }}
                           style={[
                             styles.healthBtn,
                             healthiness === opt && styles.healthBtnSelected,
