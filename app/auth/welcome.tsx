@@ -2,10 +2,10 @@
 import { router } from "expo-router";
 import React from 'react';
 import {
-    Keyboard,
-    Pressable, SafeAreaView, StyleSheet, Text,
-    TouchableWithoutFeedback,
-    View
+  Keyboard,
+  Pressable, SafeAreaView, StyleSheet, Text,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 
 export default function WelcomeScreen() {
@@ -27,13 +27,15 @@ export default function WelcomeScreen() {
         <View style={styles.centerBox}>
           <Text style={styles.title}>Welcome</Text>
 
-          <Pressable style={styles.buttonOne} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Log In</Text>
-          </Pressable>
+          <View style={styles.buttonContainer}>
+            <Pressable style={styles.buttonOne} onPress={handleLogin}>
+              <Text style={styles.buttonText}> Log In </Text>
+            </Pressable>
 
           <Pressable style={styles.buttonTwo} onPress={handleSignup}>
             <Text style={styles.buttonText}>Sign Up</Text>
           </Pressable>
+          </View>
         </View>
       </SafeAreaView>
     </TouchableWithoutFeedback>
@@ -73,6 +75,9 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 12,
     marginBottom: 15,
+  },
+  buttonContainer: {
+    justifyContent: 'center',
   },
   buttonOne: {
     backgroundColor: '#6ca0dc',
